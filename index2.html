@@ -1,0 +1,3681 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClearPro Aligner - Complete Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c7fb8;
+            --primary-dark: #1e5a8a;
+            --secondary: #7fcdbb;
+            --light: #f0f8ff;
+            --dark: #253237;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-image {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .logo-main {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo-sub {
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        nav {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            overflow-x: auto;
+            padding: 0 5px;
+        }
+        
+        .nav-tabs li {
+            flex-shrink: 0;
+        }
+        
+        .nav-tabs a {
+            display: block;
+            padding: 12px 15px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .nav-tabs a:hover, .nav-tabs a.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            background-color: rgba(44, 127, 184, 0.05);
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 15px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .section-title {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eaeaea;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(44, 127, 184, 0.2);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #236a9c;
+        }
+        
+        .btn-secondary {
+            background-color: #e9ecef;
+            color: var(--dark);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #dde1e5;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-info {
+            background-color: var(--info);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-approved {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-treatment {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-pending {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .case-id {
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .case-id:hover {
+            text-decoration: underline;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px 15px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #dee2e6;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .stat-card p {
+            color: #6c757d;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .stat-card.total {
+            border-top: 4px solid var(--primary);
+        }
+        
+        .stat-card.pending {
+            border-top: 4px solid var(--warning);
+        }
+        
+        .stat-card.approved {
+            border-top: 4px solid var(--success);
+        }
+        
+        .stat-card.treatment {
+            border-top: 4px solid var(--info);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .case-details {
+            display: none;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            border-left: 4px solid var(--primary);
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .case-details.active {
+            display: block;
+        }
+        
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .case-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+        }
+        
+        .treatment-plan {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 6px;
+            border: 1px solid #eaeaea;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .treatment-plan h4 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            position: relative;
+        }
+        
+        .file-upload:hover {
+            border-color: var(--primary);
+        }
+        
+        .file-upload i {
+            font-size: 2rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .uploaded-files {
+            margin-top: 15px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-progress {
+            width: 100%;
+            height: 4px;
+            background-color: #e9ecef;
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .file-progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .arch-options {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .arch-option {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .arch-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(44, 127, 184, 0.05);
+        }
+        
+        .scan-options {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .scan-option {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .scan-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(44, 127, 184, 0.05);
+        }
+        
+        .upload-options {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .upload-option {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(44, 127, 184, 0.05);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Dental Chart Styles */
+        .dental-chart-container {
+            margin: 20px 0;
+        }
+        
+        .teeth-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .teeth-arch {
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .teeth-arch-header {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .teeth-arch-content {
+            padding: 15px;
+            background-color: white;
+        }
+        
+        .teeth-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .tooth {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .tooth:hover {
+            border-color: var(--primary);
+            background-color: rgba(44, 127, 184, 0.05);
+        }
+        
+        .tooth.selected {
+            background-color: rgba(44, 127, 184, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .tooth input {
+            display: none;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .modal-close:hover {
+            color: var(--dark);
+        }
+        
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: var(--success);
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.active {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background-color: var(--danger);
+        }
+        
+        .notification.warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+        
+        /* Login Styles */
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            margin: 50px auto;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 50px 40px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0.3) 100%);
+        }
+        
+        .login-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .login-logo-icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .login-logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+            text-align: center;
+        }
+        
+        .login-logo-main {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-logo-sub {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            margin-top: 8px;
+            opacity: 0.95;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .login-header p {
+            opacity: 0.8;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-top: 5px;
+        }
+        
+        .login-form {
+            padding: 45px 40px 40px;
+        }
+        
+        .login-form-group {
+            margin-bottom: 28px;
+            position: relative;
+        }
+        
+        .login-label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid #e8ecef;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fafbfc;
+            color: var(--dark);
+        }
+        
+        .login-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(44, 127, 184, 0.15);
+            background: white;
+            transform: translateY(-1px);
+        }
+        
+        .login-input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+        
+        .login-input-error {
+            border-color: var(--danger);
+        }
+        
+        .login-error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .login-password-toggle {
+            position: absolute;
+            right: 18px;
+            top: 50px;
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .login-password-toggle:hover {
+            color: var(--primary);
+            background: rgba(44, 127, 184, 0.05);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .login-btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 6px 20px rgba(44, 127, 184, 0.35);
+        }
+        
+        .login-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(44, 127, 184, 0.5);
+        }
+        
+        .login-btn-primary:active {
+            transform: translateY(-1px);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding: 25px 40px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid #f0f0f0;
+            background: #fafbfc;
+            font-weight: 500;
+        }
+        
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Admin Dashboard Styles */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .admin-logo-container {
+            padding: 20px;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 70px;
+        }
+        
+        .admin-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+        
+        .admin-nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+        }
+        
+        .admin-nav-item:hover, .admin-nav-item.active {
+            background: rgba(44, 127, 184, 0.1);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        
+        .admin-nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .admin-nav-badge {
+            background: var(--danger);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
+        
+        .admin-sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .admin-main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .admin-header {
+            height: 70px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+        
+        .admin-page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .admin-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .admin-stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+            border-left: 4px solid var(--primary);
+            cursor: pointer;
+        }
+        
+        .admin-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-stat-card.pending {
+            border-left-color: var(--warning);
+        }
+        
+        .admin-stat-card.revision {
+            border-left-color: var(--danger);
+        }
+        
+        .admin-stat-card.completed {
+            border-left-color: var(--success);
+        }
+        
+        .admin-stat-card.cancelled {
+            border-left-color: var(--gray);
+        }
+        
+        .admin-stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .admin-stat-icon.pending {
+            background: var(--warning);
+        }
+        
+        .admin-stat-icon.revision {
+            background: var(--danger);
+        }
+        
+        .admin-stat-icon.completed {
+            background: var(--success);
+        }
+        
+        .admin-stat-icon.cancelled {
+            background: var(--gray);
+        }
+        
+        .admin-stat-icon.primary {
+            background: var(--primary);
+        }
+        
+        .admin-stat-info {
+            flex: 1;
+        }
+        
+        .admin-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .admin-stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .admin-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .admin-section.active {
+            display: block;
+        }
+        
+        .admin-section-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-section-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .admin-cases-list, .admin-messages-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .admin-case-item, .admin-message-item {
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-case-item:last-child, .admin-message-item:last-child {
+            border-bottom: none;
+        }
+        
+        .admin-case-item:hover, .admin-message-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .admin-case-info, .admin-message-info {
+            flex: 1;
+        }
+        
+        .admin-case-id, .admin-message-subject {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .admin-case-patient, .admin-message-preview {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .admin-case-dentist, .admin-message-sender {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .admin-case-status, .admin-message-status {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .admin-status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .admin-status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .admin-status-revision {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .admin-status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .admin-status-hold {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .admin-status-cancelled {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .admin-case-actions, .admin-message-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .admin-action-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .admin-action-btn:hover {
+            background: rgba(44, 127, 184, 0.1);
+        }
+        
+        .admin-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        
+        .admin-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .admin-empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+        
+        .admin-empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #dee2e6;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                padding: 12px 0;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .logo-text {
+                align-items: center;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            
+            .nav-tabs.active {
+                display: flex;
+            }
+            
+            .nav-tabs li {
+                width: 100%;
+            }
+            
+            .nav-tabs a {
+                text-align: left;
+                padding: 15px 20px;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .case-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .scan-options, .arch-options, .upload-options {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .tooth {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .admin-nav {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+            
+            .admin-nav-item {
+                flex-shrink: 0;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            
+            .admin-nav-item:hover, .admin-nav-item.active {
+                border-left: none;
+                border-bottom: 3px solid var(--primary);
+            }
+            
+            .admin-sidebar-footer {
+                display: none;
+            }
+            
+            .admin-header {
+                padding: 0 15px;
+            }
+            
+            .admin-content {
+                padding: 20px 15px;
+            }
+            
+            .admin-stats-cards {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .admin-section-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .admin-section-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .admin-case-item, .admin-message-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .admin-case-status, .admin-message-status {
+                align-self: flex-start;
+            }
+            
+            .admin-case-actions, .admin-message-actions {
+                align-self: flex-end;
+            }
+            
+            .login-container {
+                margin: 20px auto;
+            }
+            
+            .login-form {
+                padding: 35px 25px 30px;
+            }
+            
+            .login-header {
+                padding: 40px 25px 30px;
+            }
+            
+            .login-logo-main {
+                font-size: 2.3rem;
+            }
+            
+            .login-logo-sub {
+                font-size: 1.1rem;
+                letter-spacing: 3px;
+            }
+            
+            .login-logo-icon {
+                width: 75px;
+                height: 75px;
+                font-size: 1.7rem;
+            }
+            
+            .notification {
+                width: calc(100% - 40px);
+                right: 20px;
+                top: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .tooth {
+                width: 25px;
+                height: 25px;
+                font-size: 0.8rem;
+            }
+            
+            .admin-stats-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">Operation completed successfully</span>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-header">
+            <div class="login-logo">
+                <div class="https://i.postimg.cc/htcyfKWy/logo.png"></div>
+                <div class="login-logo-text">
+                    <div class="login-logo-main">ClearPro</div>
+                    <div class="login-logo-sub">ALIGNER</div>
+                </div>
+            </div>
+            <p>Secure access to your account</p>
+        </div>
+        
+        <form class="login-form" id="loginForm">
+            <div class="login-form-group">
+                <label for="username" class="login-label">Username</label>
+                <input type="text" id="username" class="login-input" placeholder="Enter your username" required>
+                <div class="login-error-message" id="username-error">Please enter a valid username</div>
+            </div>
+            
+            <div class="login-form-group">
+                <label for="password" class="login-label">Password</label>
+                <input type="password" id="password" class="login-input" placeholder="Enter your password" required>
+                <button type="button" class="login-password-toggle" id="passwordToggle">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <div class="login-error-message" id="password-error">Please enter your password</div>
+            </div>
+            
+            <button type="submit" class="login-btn login-btn-primary" id="loginButton">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </form>
+        
+        <div class="login-footer">
+            &copy; 2024 ClearPro Aligner. All rights reserved.<br>
+            <a href="mailto:contact@clearproaligner.com">Contact Support</a>
+        </div>
+    </div>
+
+    <!-- Doctor Portal -->
+    <div id="doctorPortal" style="display: none;">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <div class="https://i.postimg.cc/htcyfKWy/logo.png"></div>
+                        <div class="logo-text">
+                            <div class="logo-main">ClearPro</div>
+                            <div class="logo-sub">ALIGNER</div>
+                        </div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">DR</div>
+                        <div>
+                            <div id="userDisplayName">Loading...</div>
+                            <small id="userRole">Dental Professional</small>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" id="logoutBtn" style="margin-left: 10px;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <nav>
+            <div class="container">
+                <ul class="nav-tabs" id="navTabs">
+                    <li><a href="#" class="nav-link active" data-tab="dashboard">Dashboard</a></li>
+                    <li><a href="#" class="nav-link" data-tab="new-case">Register New Case</a></li>
+                    <li><a href="#" class="nav-link" data-tab="all-cases">All Cases</a></li>
+                    <li><a href="#" class="nav-link" data-tab="approved-cases">Approved Cases</a></li>
+                    <li><a href="#" class="nav-link" data-tab="pending-cases">Pending Approval</a></li>
+                    <li><a href="#" class="nav-link" data-tab="treatment-cases">Pending Treatment Plan</a></li>
+                </ul>
+            </div>
+        </nav>
+        
+        <div class="container">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2 class="section-title">Dashboard</h2>
+                
+                <div class="stats">
+                    <div class="stat-card total" data-tab="new-case">
+                        <h3 id="new-cases-count">0</h3>
+                        <p>New Cases</p>
+                    </div>
+                    <div class="stat-card pending" data-tab="pending-cases">
+                        <h3 id="pending-approval-count">0</h3>
+                        <p>Pending Approval</p>
+                    </div>
+                    <div class="stat-card approved" data-tab="all-cases">
+                        <h3 id="pending-revision-count">0</h3>
+                        <p>Pending Revision</p>
+                    </div>
+                    <div class="stat-card treatment" data-tab="all-cases">
+                        <h3 id="pending-completion-count">0</h3>
+                        <p>Pending Completion</p>
+                    </div>
+                </div>
+                
+                <h3 class="section-title">Recent Cases</h3>
+                <div class="table-container">
+                    <table id="recent-cases-table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Patient</th>
+                                <th>Age</th>
+                                <th>Order Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Cases will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Register New Case Tab -->
+            <div id="new-case" class="tab-content">
+                <h2 class="section-title">Register New Case</h2>
+                
+                <form id="case-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="case-id">Case ID</label>
+                            <input type="text" id="case-id" placeholder="Auto-generated" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="order-date">Order Date</label>
+                            <input type="date" id="order-date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="doctor">Doctor</label>
+                            <input type="text" id="doctor" value="Dr. Hilda Naeimi" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="patient">Patient</label>
+                            <input type="text" id="patient" placeholder="Enter patient name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age">Age</label>
+                            <input type="number" id="age" placeholder="Enter patient age" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Impression Type -->
+                    <div class="form-group">
+                        <label>Impression Type</label>
+                        <div class="scan-options">
+                            <div class="scan-option selected" data-scan="physical">
+                                <i class="fas fa-print"></i>
+                                <p>Physical Impression</p>
+                            </div>
+                            <div class="scan-option" data-scan="digital">
+                                <i class="fas fa-digital-tachograph"></i>
+                                <p>Digital Scan</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Upload Options</label>
+                        <div class="upload-options">
+                            <div class="upload-option selected" data-upload="stl">
+                                <i class="fas fa-cube"></i>
+                                <p>STL Files</p>
+                            </div>
+                            <div class="upload-option" data-upload="images">
+                                <i class="fas fa-images"></i>
+                                <p>Images</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="stl-upload-section">
+                        <label>Upload STL Files</label>
+                        <div class="file-upload" id="stlFileUpload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload or drag and drop</p>
+                            <small>STL, OBJ, PLY files (Max 100MB)</small>
+                            <input type="file" id="stlFileInput" class="hidden" accept=".stl,.obj,.ply" multiple>
+                        </div>
+                        <div class="uploaded-files" id="stlUploadedFiles">
+                            <!-- STL files will appear here -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group hidden" id="image-upload-section">
+                        <label>Upload Images</label>
+                        <div class="file-upload" id="imageFileUpload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload or drag and drop</p>
+                            <small>JPG, PNG, GIF files (Max 50MB)</small>
+                            <input type="file" id="imageFileInput" class="hidden" accept="image/*" multiple>
+                        </div>
+                        <div class="uploaded-files" id="imageUploadedFiles">
+                            <!-- Image files will appear here -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Arch Selection</label>
+                        <div class="arch-options">
+                            <div class="arch-option" data-arch="upper">
+                                <i class="fas fa-teeth"></i>
+                                <p>Upper Arch Only</p>
+                            </div>
+                            <div class="arch-option" data-arch="lower">
+                                <i class="fas fa-teeth-open"></i>
+                                <p>Lower Arch Only</p>
+                            </div>
+                            <div class="arch-option selected" data-arch="both">
+                                <i class="fas fa-teeth"></i>
+                                <p>Both Arches</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Teeth Selection -->
+                    <div class="form-group">
+                        <label>Teeth Selection</label>
+                        <div class="dental-chart-container">
+                            <div class="teeth-selection">
+                                <!-- Upper Arch -->
+                                <div class="teeth-arch">
+                                    <div class="teeth-arch-header">Upper Arch</div>
+                                    <div class="teeth-arch-content">
+                                        <div class="teeth-row">
+                                            <!-- Upper right molars and premolars -->
+                                            <div class="tooth" data-tooth="18"><input type="checkbox" value="18">18</div>
+                                            <div class="tooth" data-tooth="17"><input type="checkbox" value="17">17</div>
+                                            <div class="tooth" data-tooth="16"><input type="checkbox" value="16">16</div>
+                                            <div class="tooth" data-tooth="15"><input type="checkbox" value="15">15</div>
+                                            <div class="tooth" data-tooth="14"><input type="checkbox" value="14">14</div>
+                                            <div class="tooth" data-tooth="13"><input type="checkbox" value="13">13</div>
+                                            <div class="tooth" data-tooth="12"><input type="checkbox" value="12">12</div>
+                                            <div class="tooth" data-tooth="11"><input type="checkbox" value="11">11</div>
+                                        </div>
+                                        <div class="teeth-row">
+                                            <!-- Upper front teeth -->
+                                            <div class="tooth" data-tooth="21"><input type="checkbox" value="21">21</div>
+                                            <div class="tooth" data-tooth="22"><input type="checkbox" value="22">22</div>
+                                            <div class="tooth" data-tooth="23"><input type="checkbox" value="23">23</div>
+                                            <div class="tooth" data-tooth="24"><input type="checkbox" value="24">24</div>
+                                            <div class="tooth" data-tooth="25"><input type="checkbox" value="25">25</div>
+                                            <div class="tooth" data-tooth="26"><input type="checkbox" value="26">26</div>
+                                            <div class="tooth" data-tooth="27"><input type="checkbox" value="27">27</div>
+                                            <div class="tooth" data-tooth="28"><input type="checkbox" value="28">28</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Lower Arch -->
+                                <div class="teeth-arch">
+                                    <div class="teeth-arch-header">Lower Arch</div>
+                                    <div class="teeth-arch-content">
+                                        <div class="teeth-row">
+                                            <!-- Lower right molars and premolars -->
+                                            <div class="tooth" data-tooth="48"><input type="checkbox" value="48">48</div>
+                                            <div class="tooth" data-tooth="47"><input type="checkbox" value="47">47</div>
+                                            <div class="tooth" data-tooth="46"><input type="checkbox" value="46">46</div>
+                                            <div class="tooth" data-tooth="45"><input type="checkbox" value="45">45</div>
+                                            <div class="tooth" data-tooth="44"><input type="checkbox" value="44">44</div>
+                                            <div class="tooth" data-tooth="43"><input type="checkbox" value="43">43</div>
+                                            <div class="tooth" data-tooth="42"><input type="checkbox" value="42">42</div>
+                                            <div class="tooth" data-tooth="41"><input type="checkbox" value="41">41</div>
+                                        </div>
+                                        <div class="teeth-row">
+                                            <!-- Lower front teeth -->
+                                            <div class="tooth" data-tooth="31"><input type="checkbox" value="31">31</div>
+                                            <div class="tooth" data-tooth="32"><input type="checkbox" value="32">32</div>
+                                            <div class="tooth" data-tooth="33"><input type="checkbox" value="33">33</div>
+                                            <div class="tooth" data-tooth="34"><input type="checkbox" value="34">34</div>
+                                            <div class="tooth" data-tooth="35"><input type="checkbox" value="35">35</div>
+                                            <div class="tooth" data-tooth="36"><input type="checkbox" value="36">36</div>
+                                            <div class="tooth" data-tooth="37"><input type="checkbox" value="37">37</div>
+                                            <div class="tooth" data-tooth="38"><input type="checkbox" value="38">38</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="instructions">Special Instructions/Comments</label>
+                        <textarea id="instructions" rows="4" placeholder="Enter any special instructions or comments for the treatment plan"></textarea>
+                    </div>
+                    
+                    <div class="actions">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button type="submit" class="btn btn-primary">Register Case</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- All Cases Tab -->
+            <div id="all-cases" class="tab-content">
+                <h2 class="section-title">All Cases</h2>
+                
+                <div class="table-container">
+                    <table id="all-cases-table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Patient</th>
+                                <th>Age</th>
+                                <th>Order Date</th>
+                                <th>Doctor</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Cases will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Approved Cases Tab -->
+            <div id="approved-cases" class="tab-content">
+                <h2 class="section-title">Approved Cases</h2>
+                
+                <div class="table-container">
+                    <table id="approved-cases-table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Patient</th>
+                                <th>Age</th>
+                                <th>Order Date</th>
+                                <th>Doctor</th>
+                                <th>Approval Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Approved cases will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pending Approval Tab -->
+            <div id="pending-cases" class="tab-content">
+                <h2 class="section-title">Pending Approval Cases</h2>
+                
+                <div class="table-container">
+                    <table id="pending-cases-table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Patient</th>
+                                <th>Age</th>
+                                <th>Order Date</th>
+                                <th>Doctor</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Pending approval cases will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pending Treatment Plan Tab -->
+            <div id="treatment-cases" class="tab-content">
+                <h2 class="section-title">Pending Treatment Plan Cases</h2>
+                
+                <div class="table-container">
+                    <table id="treatment-cases-table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Patient</th>
+                                <th>Age</th>
+                                <th>Order Date</th>
+                                <th>Doctor</th>
+                                <th>Days Since Registration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Pending treatment plan cases will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Case Details Modal -->
+        <div class="modal" id="caseModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modalCaseTitle">Case Details</h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div id="modalCaseContent">
+                    <!-- Case details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="admin-container" style="display: none;">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="admin-logo-container">
+                <div class="logo">
+                    <div class="https://i.postimg.cc/htcyfKWy/logo.png"></div>
+                    <div class="logo-text">
+                        <div class="logo-main">ClearPro</div>
+                        <div class="logo-sub">ALIGNER</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="admin-nav">
+                <a class="admin-nav-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="admin-nav-item" data-section="pending-cases">
+                    <i class="fas fa-upload"></i>
+                    <span>Pending Upload</span>
+                    <span class="admin-nav-badge" id="pending-badge">0</span>
+                </a>
+                <a class="admin-nav-item" data-section="revision-cases">
+                    <i class="fas fa-redo"></i>
+                    <span>Revision Requests</span>
+                    <span class="admin-nav-badge" id="revision-badge">0</span>
+                </a>
+                <a class="admin-nav-item" data-section="hold-cases">
+                    <i class="fas fa-pause-circle"></i>
+                    <span>Cases On Hold</span>
+                    <span class="admin-nav-badge" id="hold-badge">0</span>
+                </a>
+                <a class="admin-nav-item" data-section="cancelled-cases">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Cancelled Cases</span>
+                    <span class="admin-nav-badge" id="cancelled-badge">0</span>
+                </a>
+                <a class="admin-nav-item" data-section="messages">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                    <span class="admin-nav-badge" id="messages-badge">0</span>
+                </a>
+                <a class="admin-nav-item" data-section="doctors">
+                    <i class="fas fa-users"></i>
+                    <span>Doctors</span>
+                </a>
+            </div>
+            
+            <div class="admin-sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name" id="admin-name">System Administrator</div>
+                        <div class="user-role">Admin Account</div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" id="adminLogoutButton">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-main-content">
+            <div class="admin-header">
+                <div class="admin-page-title" id="adminPageTitle">Dashboard</div>
+                <div class="admin-header-actions">
+                    <button class="btn btn-sm btn-secondary" id="adminLogoutHeaderBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-content">
+                <!-- Dashboard Section -->
+                <div class="admin-section active" id="dashboard">
+                    <!-- Stats Cards -->
+                    <div class="admin-stats-cards">
+                        <div class="admin-stat-card" data-section="pending-cases">
+                            <div class="admin-stat-icon primary">
+                                <i class="fas fa-file-medical"></i>
+                            </div>
+                            <div class="admin-stat-info">
+                                <div class="admin-stat-value" id="total-cases">0</div>
+                                <div class="admin-stat-label">Total Cases</div>
+                            </div>
+                        </div>
+                        <div class="admin-stat-card pending" data-section="pending-cases">
+                            <div class="admin-stat-icon pending">
+                                <i class="fas fa-upload"></i>
+                            </div>
+                            <div class="admin-stat-info">
+                                <div class="admin-stat-value" id="pending-cases">0</div>
+                                <div class="admin-stat-label">Pending Upload</div>
+                            </div>
+                        </div>
+                        <div class="admin-stat-card revision" data-section="revision-cases">
+                            <div class="admin-stat-icon revision">
+                                <i class="fas fa-redo"></i>
+                            </div>
+                            <div class="admin-stat-info">
+                                <div class="admin-stat-value" id="revision-cases">0</div>
+                                <div class="admin-stat-label">Revision Requests</div>
+                            </div>
+                        </div>
+                        <div class="admin-stat-card hold" data-section="hold-cases">
+                            <div class="admin-stat-icon hold">
+                                <i class="fas fa-pause-circle"></i>
+                            </div>
+                            <div class="admin-stat-info">
+                                <div class="admin-stat-value" id="hold-cases">0</div>
+                                <div class="admin-stat-label">Cases On Hold</div>
+                            </div>
+                        </div>
+                        <div class="admin-stat-card cancelled" data-section="cancelled-cases">
+                            <div class="admin-stat-icon cancelled">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="admin-stat-info">
+                                <div class="admin-stat-value" id="cancelled-cases">0</div>
+                                <div class="admin-stat-label">Cancelled Cases</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="admin-section active">
+                        <div class="admin-section-header">
+                            <div class="admin-section-title">
+                                <i class="fas fa-history"></i>
+                                Recent Activity
+                            </div>
+                            <div class="admin-section-actions">
+                                <button class="btn btn-outline">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <button class="btn btn-primary" id="adminRefreshBtn">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-section-content">
+                            <div class="admin-cases-list" id="admin-recent-activity">
+                                <div class="admin-loading">
+                                    <div class="admin-spinner"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pending Cases Section -->
+                <div class="admin-section" id="pending-cases">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <i class="fas fa-upload"></i>
+                            Cases Pending For Files Upload
+                        </div>
+                        <div class="admin-section-actions">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <button class="btn btn-primary" id="adminRefreshPendingBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-section-content">
+                        <div class="admin-cases-list" id="admin-pending-cases-list">
+                            <div class="admin-loading">
+                                <div class="admin-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Revision Cases Section -->
+                <div class="admin-section" id="revision-cases">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <i class="fas fa-redo"></i>
+                            Revision Requests
+                        </div>
+                        <div class="admin-section-actions">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <button class="btn btn-primary" id="adminRefreshRevisionBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-section-content">
+                        <div class="admin-cases-list" id="admin-revision-cases-list">
+                            <div class="admin-loading">
+                                <div class="admin-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hold Cases Section -->
+                <div class="admin-section" id="hold-cases">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <i class="fas fa-pause-circle"></i>
+                            Cases On Hold
+                        </div>
+                        <div class="admin-section-actions">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <button class="btn btn-primary" id="adminRefreshHoldBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-section-content">
+                        <div class="admin-cases-list" id="admin-hold-cases-list">
+                            <div class="admin-loading">
+                                <div class="admin-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cancelled Cases Section -->
+                <div class="admin-section" id="cancelled-cases">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <i class="fas fa-times-circle"></i>
+                            Cancelled Cases
+                        </div>
+                        <div class="admin-section-actions">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <button class="btn btn-primary" id="adminRefreshCancelledBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-section-content">
+                        <div class="admin-cases-list" id="admin-cancelled-cases-list">
+                            <div class="admin-loading">
+                                <div class="admin-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Messages Section -->
+                <div class="admin-section" id="messages">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <i class="fas fa-comments"></i>
+                            Messages
+                        </div>
+                        <div class="admin-section-actions">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <button class="btn btn-primary" id="adminRefreshMessagesBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-section-content">
+                        <div class="admin-messages-list" id="admin-messages-list">
+                            <div class="admin-loading">
+                                <div class="admin-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Doctors Section -->
+                <div class="admin-section" id="doctors">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <i class="fas fa-users"></i>
+                            Doctors
+                        </div>
+                        <div class="admin-section-actions">
+                            <button class="btn btn-outline">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <button class="btn btn-primary" id="adminRefreshDoctorsBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-section-content">
+                        <div class="admin-doctors-list" id="admin-doctors-list">
+                            <div class="admin-loading">
+                                <div class="admin-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MongoDB Connection Configuration
+        const MONGODB_API_URL = 'https://us-east-1.aws.data.mongodb-api.com/app/data-abcde/endpoint/data/v1';
+        const MONGODB_API_KEY = 'nzrthvdy'; // Replace with your actual API key
+        const DATABASE_NAME = 'clearpro-aligner';
+        const COLLECTION_NAME = 'cases';
+
+        // User accounts for authentication
+        const userAccounts = {
+            // Doctor accounts
+            'dr.hilda': {
+                password: 'clearpro123',
+                role: 'Dr. Hilda Naeimi - Senior Dentist',
+                fullName: 'Dr. Hilda Naeimi',
+                specialty: 'Orthodontics',
+                id: 'D-001',
+                type: 'doctor'
+            },
+            'dr.smith': {
+                password: 'aligner2024',
+                role: 'Dr. Smith - Orthodontist',
+                fullName: 'Dr. Robert Smith',
+                specialty: 'Orthodontics',
+                id: 'D-002',
+                type: 'doctor'
+            },
+            'dr.johnson': {
+                password: 'dentist456',
+                role: 'Dr. Johnson - Dental Surgeon',
+                fullName: 'Dr. Michael Johnson',
+                specialty: 'Oral Surgery',
+                id: 'D-003',
+                type: 'doctor'
+            },
+            // Admin account
+            'admin': {
+                password: 'Admin123!',
+                role: 'System Administrator',
+                fullName: 'System Administrator',
+                specialty: 'System Administration',
+                id: 'A-001',
+                type: 'admin'
+            }
+        };
+
+        // Global variables
+        let currentUser = null;
+        let cases = [];
+        let nextCaseId = 1001;
+
+        // MongoDB API functions
+        const mongoAPI = {
+            // Get all cases
+            async getCases() {
+                try {
+                    const response = await axios.get(`${MONGODB_API_URL}/action/find`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'api-key': MONGODB_API_KEY
+                        },
+                        data: {
+                            collection: COLLECTION_NAME,
+                            database: DATABASE_NAME,
+                            dataSource: 'Cluster0'
+                        }
+                    });
+                    return response.data.documents || [];
+                } catch (error) {
+                    console.error('Error fetching cases from MongoDB:', error);
+                    showNotification('Error fetching cases from database', 'error');
+                    return [];
+                }
+            },
+
+            // Create a new case
+            async createCase(caseData) {
+                try {
+                    const response = await axios.post(`${MONGODB_API_URL}/action/insertOne`, {
+                        collection: COLLECTION_NAME,
+                        database: DATABASE_NAME,
+                        dataSource: 'Cluster0',
+                        document: caseData
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'api-key': MONGODB_API_KEY
+                        }
+                    });
+                    return response.data;
+                } catch (error) {
+                    console.error('Error creating case in MongoDB:', error);
+                    showNotification('Error creating case in database', 'error');
+                    throw error;
+                }
+            },
+
+            // Update a case
+            async updateCase(caseId, updateData) {
+                try {
+                    const response = await axios.post(`${MONGODB_API_URL}/action/updateOne`, {
+                        collection: COLLECTION_NAME,
+                        database: DATABASE_NAME,
+                        dataSource: 'Cluster0',
+                        filter: { _id: { $oid: caseId } },
+                        update: { $set: updateData }
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'api-key': MONGODB_API_KEY
+                        }
+                    });
+                    return response.data;
+                } catch (error) {
+                    console.error('Error updating case in MongoDB:', error);
+                    showNotification('Error updating case in database', 'error');
+                    throw error;
+                }
+            },
+
+            // Delete a case
+            async deleteCase(caseId) {
+                try {
+                    const response = await axios.post(`${MONGODB_API_URL}/action/deleteOne`, {
+                        collection: COLLECTION_NAME,
+                        database: DATABASE_NAME,
+                        dataSource: 'Cluster0',
+                        filter: { _id: { $oid: caseId } }
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'api-key': MONGODB_API_KEY
+                        }
+                    });
+                    return response.data;
+                } catch (error) {
+                    console.error('Error deleting case from MongoDB:', error);
+                    showNotification('Error deleting case from database', 'error');
+                    throw error;
+                }
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            checkLoginStatus();
+            
+            // Setup login form
+            setupLoginForm();
+        });
+        
+        // Check login status
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userType = localStorage.getItem('userType');
+            
+            if (isLoggedIn === 'true') {
+                currentUser = {
+                    username: localStorage.getItem('currentUser'),
+                    role: localStorage.getItem('userRole'),
+                    fullName: localStorage.getItem('userFullName'),
+                    specialty: localStorage.getItem('userSpecialty'),
+                    id: localStorage.getItem('userId'),
+                    type: localStorage.getItem('userType')
+                };
+                
+                if (userType === 'admin') {
+                    showAdminDashboard();
+                } else {
+                    showDoctorPortal();
+                }
+            } else {
+                showLoginPage();
+            }
+        }
+        
+        // Setup login form
+        function setupLoginForm() {
+            const loginForm = document.getElementById('loginForm');
+            const passwordToggle = document.getElementById('passwordToggle');
+            const passwordInput = document.getElementById('password');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    
+                    // Validate credentials
+                    if (userAccounts[username] && userAccounts[username].password === password) {
+                        // Successful login
+                        showNotification(`Welcome, ${userAccounts[username].fullName}!`, 'success');
+                        
+                        // Store login state and user data
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('currentUser', username);
+                        localStorage.setItem('userRole', userAccounts[username].role);
+                        localStorage.setItem('userFullName', userAccounts[username].fullName);
+                        localStorage.setItem('userSpecialty', userAccounts[username].specialty);
+                        localStorage.setItem('userId', userAccounts[username].id);
+                        localStorage.setItem('userType', userAccounts[username].type);
+                        
+                        currentUser = userAccounts[username];
+                        
+                        // Redirect based on user type
+                        setTimeout(() => {
+                            if (userAccounts[username].type === 'admin') {
+                                showAdminDashboard();
+                            } else {
+                                showDoctorPortal();
+                            }
+                        }, 1500);
+                        
+                    } else {
+                        // Failed login
+                        showNotification('Invalid username or password. Please try again.', 'error');
+                        document.getElementById('password').value = '';
+                        document.getElementById('password').focus();
+                    }
+                });
+            }
+            
+            if (passwordToggle) {
+                passwordToggle.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    const icon = this.querySelector('i');
+                    if (type === 'text') {
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            }
+        }
+        
+        // Setup doctor portal
+        function setupDoctorPortal() {
+            // Set today's date as default for order date
+            document.getElementById('order-date').valueAsDate = new Date();
+            
+            // Generate case ID
+            generateCaseId();
+            
+            // Update user info
+            document.getElementById('userDisplayName').textContent = currentUser.role;
+            document.getElementById('userRole').textContent = currentUser.role.split(' - ')[1] || 'Dental Professional';
+            
+            // Set avatar
+            const avatar = document.getElementById('userAvatar');
+            if (currentUser.role.includes('Hilda')) avatar.textContent = 'HN';
+            else if (currentUser.role.includes('Smith')) avatar.textContent = 'DS';
+            else if (currentUser.role.includes('Johnson')) avatar.textContent = 'DJ';
+            else avatar.textContent = 'DR';
+            
+            // Set doctor name in form
+            document.getElementById('doctor').value = currentUser.role.split(' - ')[0] || 'Dr. Hilda Naeimi';
+            
+            // Tab navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs and content
+                    document.querySelectorAll('.nav-link').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Close mobile menu if open
+                    document.getElementById('navTabs').classList.remove('active');
+                });
+            });
+            
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                document.getElementById('navTabs').classList.toggle('active');
+            });
+            
+            // Modal close functionality
+            document.getElementById('modalClose').addEventListener('click', function() {
+                document.getElementById('caseModal').classList.remove('active');
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('caseModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+            
+            // Form submission
+            document.getElementById('case-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const caseId = document.getElementById('case-id').value;
+                const orderDate = document.getElementById('order-date').value;
+                const doctor = document.getElementById('doctor').value;
+                const patient = document.getElementById('patient').value;
+                const age = document.getElementById('age').value;
+                const instructions = document.getElementById('instructions').value;
+                
+                // Get selected options
+                const impressionType = document.querySelector('.scan-option.selected').getAttribute('data-scan');
+                const uploadType = document.querySelector('.upload-option.selected').getAttribute('data-upload');
+                const archSelection = document.querySelector('.arch-option.selected').getAttribute('data-arch');
+                
+                // Get selected teeth
+                const selectedTeeth = [];
+                document.querySelectorAll('.tooth input:checked').forEach(checkbox => {
+                    selectedTeeth.push(checkbox.value);
+                });
+                
+                // Create new case
+                const newCase = {
+                    caseId,
+                    orderDate,
+                    doctor,
+                    patient,
+                    age: parseInt(age),
+                    instructions,
+                    impressionType,
+                    uploadType,
+                    archSelection,
+                    selectedTeeth,
+                    status: "Pending Treatment Plan",
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    submittedBy: currentUser.username,
+                    doctorEmail: currentUser.username
+                };
+                
+                try {
+                    // Save to MongoDB
+                    const result = await mongoAPI.createCase(newCase);
+                    showNotification('Case registered successfully! It will appear in the admin dashboard.');
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Reset form UI
+                    document.getElementById('order-date').valueAsDate = new Date();
+                    document.querySelectorAll('.tooth').forEach(tooth => {
+                        tooth.classList.remove('selected');
+                        tooth.querySelector('input').checked = false;
+                    });
+                    
+                    // Generate new case ID
+                    generateCaseId();
+                    
+                    // Refresh cases
+                    loadCases();
+                    
+                } catch (error) {
+                    console.error("Error adding case to MongoDB: ", error);
+                    showNotification('Error registering case. Please try again.', 'error');
+                }
+            });
+            
+            // Dashboard stat cards clickable
+            document.querySelectorAll('.stat-card').forEach(stat => {
+                stat.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and content
+                    document.querySelectorAll('.nav-link').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked tab
+                    document.querySelector(`.nav-link[data-tab="${tabId}"]`).classList.add('active');
+                    
+                    // Show corresponding content
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Close mobile menu if open
+                    document.getElementById('navTabs').classList.remove('active');
+                });
+            });
+            
+            // Scan option selection (now Impression Type)
+            document.querySelectorAll('.scan-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.scan-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Upload option selection
+            document.querySelectorAll('.upload-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.upload-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    const uploadType = this.getAttribute('data-upload');
+                    if (uploadType === 'stl') {
+                        document.getElementById('stl-upload-section').classList.remove('hidden');
+                        document.getElementById('image-upload-section').classList.add('hidden');
+                    } else {
+                        document.getElementById('stl-upload-section').classList.add('hidden');
+                        document.getElementById('image-upload-section').classList.remove('hidden');
+                    }
+                });
+            });
+            
+            // Arch option selection
+            document.querySelectorAll('.arch-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.arch-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Teeth selection
+            document.querySelectorAll('.tooth').forEach(tooth => {
+                tooth.addEventListener('click', function() {
+                    const checkbox = this.querySelector('input');
+                    checkbox.checked = !checkbox.checked;
+                    this.classList.toggle('selected', checkbox.checked);
+                });
+            });
+            
+            // File upload functionality (simulated)
+            setupFileUpload('stlFileUpload', 'stlFileInput', 'stlUploadedFiles', ['stl', 'obj', 'ply']);
+            setupFileUpload('imageFileUpload', 'imageFileInput', 'imageUploadedFiles', ['jpg', 'jpeg', 'png', 'gif']);
+            
+            // Logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                logout();
+            });
+            
+            // Load initial data
+            loadCases();
+        }
+        
+        // Setup admin dashboard
+        function setupAdminDashboard() {
+            // Update admin info
+            document.getElementById('admin-name').textContent = currentUser.fullName;
+            
+            // Navigation
+            document.querySelectorAll('.admin-nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-section');
+                    switchAdminSection(sectionId);
+                    
+                    // Update active nav item
+                    document.querySelectorAll('.admin-nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Logout functionality
+            document.getElementById('adminLogoutButton').addEventListener('click', function() {
+                logout();
+            });
+            
+            document.getElementById('adminLogoutHeaderBtn').addEventListener('click', function() {
+                logout();
+            });
+            
+            // Refresh buttons
+            document.getElementById('adminRefreshBtn').addEventListener('click', function() {
+                loadCases();
+                showNotification('Data refreshed successfully');
+            });
+            
+            // Load initial data
+            loadCases();
+        }
+        
+        // Load cases from MongoDB
+        async function loadCases() {
+            try {
+                cases = await mongoAPI.getCases();
+                
+                // Update dashboard with real data
+                if (currentUser.type === 'doctor') {
+                    updateDoctorDashboard();
+                } else {
+                    updateAdminDashboard();
+                }
+                
+            } catch (error) {
+                console.error("Error loading cases from MongoDB:", error);
+                showNotification("Error loading data from database", "error");
+                
+                // Fallback to demo data if MongoDB fails
+                loadDemoData();
+            }
+        }
+        
+        // Function to generate case ID
+        function generateCaseId() {
+            const currentYear = new Date().getFullYear();
+            const randomNum = Math.floor(Math.random() * 1000);
+            const caseId = `CP-${currentYear}-${randomNum.toString().padStart(3, '0')}`;
+            document.getElementById('case-id').value = caseId;
+        }
+        
+        // Function to show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            // Set notification content and type
+            notificationText.textContent = message;
+            notification.className = 'notification';
+            if (type === 'error') {
+                notification.classList.add('error');
+            } else if (type === 'warning') {
+                notification.classList.add('warning');
+            }
+            
+            // Show notification
+            notification.classList.add('active');
+            
+            // Hide notification after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 5000);
+        }
+        
+        // Function to setup file upload
+        function setupFileUpload(uploadAreaId, fileInputId, uploadedFilesId, allowedExtensions) {
+            const uploadArea = document.getElementById(uploadAreaId);
+            const fileInput = document.getElementById(fileInputId);
+            const uploadedFiles = document.getElementById(uploadedFilesId);
+            
+            if (!uploadArea || !fileInput) return;
+            
+            // Click on upload area to trigger file input
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files, uploadedFiles, allowedExtensions);
+            });
+            
+            // Drag and drop functionality
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#2c7fb8';
+                this.style.backgroundColor = 'rgba(44, 127, 184, 0.05)';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#ddd';
+                this.style.backgroundColor = 'transparent';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#ddd';
+                this.style.backgroundColor = 'transparent';
+                
+                const files = e.dataTransfer.files;
+                handleFiles(files, uploadedFiles, allowedExtensions);
+            });
+        }
+        
+        // Function to handle uploaded files
+        function handleFiles(files, uploadedFilesContainer, allowedExtensions) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                
+                // Check if file extension is allowed
+                if (!allowedExtensions.includes(fileExtension)) {
+                    alert(`File type not allowed: ${file.name}. Allowed types: ${allowedExtensions.join(', ')}`);
+                    continue;
+                }
+                
+                // Create file item
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                // Create thumbnail for images
+                let thumbnailHTML = '';
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fileItem.querySelector('.file-thumbnail').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    thumbnailHTML = `<img src="" class="file-thumbnail" alt="Thumbnail">`;
+                } else {
+                    // For non-image files, use appropriate icon
+                    const fileIcon = getFileIcon(fileExtension);
+                    thumbnailHTML = `<div class="file-thumbnail" style="display:flex; align-items:center; justify-content:center; background:#e9ecef;">
+                        <i class="${fileIcon}" style="font-size:1.5rem; color:#6c757d;"></i>
+                    </div>`;
+                }
+                
+                fileItem.innerHTML = `
+                    <div class="file-preview">
+                        ${thumbnailHTML}
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                            <div class="file-progress">
+                                <div class="file-progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-sm">Remove</button>
+                `;
+                
+                uploadedFilesContainer.appendChild(fileItem);
+                
+                // Simulate file upload
+                simulateFileUpload(file, fileItem);
+                
+                // Add remove functionality
+                fileItem.querySelector('button').addEventListener('click', function() {
+                    fileItem.remove();
+                });
+            }
+        }
+        
+        // Function to get appropriate file icon
+        function getFileIcon(extension) {
+            switch(extension) {
+                case 'stl':
+                case 'obj':
+                case 'ply':
+                    return 'fas fa-cube';
+                case 'pdf':
+                    return 'fas fa-file-pdf';
+                case 'doc':
+                case 'docx':
+                    return 'fas fa-file-word';
+                default:
+                    return 'fas fa-file';
+            }
+        }
+        
+        // Function to format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Function to simulate file upload
+        function simulateFileUpload(file, fileItem) {
+            const progressBar = fileItem.querySelector('.file-progress-bar');
+            let progress = 0;
+            
+            const uploadInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(uploadInterval);
+                    
+                    fileItem.querySelector('.file-info').innerHTML += ' <span style="color: green;">(Uploaded)</span>';
+                    
+                    // Add download button
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'btn btn-primary btn-sm';
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                    downloadBtn.style.marginLeft = '5px';
+                    downloadBtn.addEventListener('click', function() {
+                        showNotification(`Downloading ${file.name}`, 'info');
+                    });
+                    
+                    fileItem.querySelector('.file-preview').appendChild(downloadBtn);
+                }
+                progressBar.style.width = `${progress}%`;
+            }, 200);
+        }
+        
+        // Update doctor dashboard
+        function updateDoctorDashboard() {
+            const doctorCases = cases.filter(c => c.submittedBy === currentUser.username);
+            
+            // Count cases by status
+            const statusCounts = {
+                newCases: doctorCases.filter(c => c.status === 'Pending Treatment Plan').length,
+                pendingApproval: doctorCases.filter(c => c.status === 'Pending Approval').length,
+                pendingRevision: doctorCases.filter(c => c.status === 'Pending Revision').length,
+                pendingCompletion: doctorCases.filter(c => c.status === 'Pending Completion').length,
+            };
+            
+            // Update dashboard counts
+            document.getElementById('new-cases-count').textContent = statusCounts.newCases;
+            document.getElementById('pending-approval-count').textContent = statusCounts.pendingApproval;
+            document.getElementById('pending-revision-count').textContent = statusCounts.pendingRevision;
+            document.getElementById('pending-completion-count').textContent = statusCounts.pendingCompletion;
+            
+            // Populate tables
+            populateRecentCasesTable(doctorCases);
+            populateAllCasesTable(doctorCases);
+            populateApprovedCasesTable(doctorCases);
+            populatePendingCasesTable(doctorCases);
+            populateTreatmentCasesTable(doctorCases);
+        }
+        
+        // Update admin dashboard
+        function updateAdminDashboard() {
+            // Count cases by status
+            const statusCounts = {
+                total: cases.length,
+                pending: cases.filter(c => c.status === 'Pending Treatment Plan').length,
+                revision: cases.filter(c => c.status === 'Pending Revision').length,
+                hold: cases.filter(c => c.status === 'On Hold').length,
+                cancelled: cases.filter(c => c.status === 'Cancelled').length,
+                completed: cases.filter(c => c.status === 'Approved' || c.status === 'Completed').length
+            };
+            
+            // Update stats cards
+            document.getElementById('total-cases').textContent = statusCounts.total;
+            document.getElementById('pending-cases').textContent = statusCounts.pending;
+            document.getElementById('revision-cases').textContent = statusCounts.revision;
+            document.getElementById('hold-cases').textContent = statusCounts.hold;
+            document.getElementById('cancelled-cases').textContent = statusCounts.cancelled;
+            
+            // Update badge counts
+            document.getElementById('pending-badge').textContent = statusCounts.pending;
+            document.getElementById('revision-badge').textContent = statusCounts.revision;
+            document.getElementById('hold-badge').textContent = statusCounts.hold;
+            document.getElementById('cancelled-badge').textContent = statusCounts.cancelled;
+            
+            // Update recent activity
+            updateAdminRecentActivity(cases);
+            
+            // Update pending cases
+            updateAdminPendingCases(cases);
+            
+            // Update revision cases
+            updateAdminRevisionCases(cases);
+            
+            // Update hold cases
+            updateAdminHoldCases(cases);
+            
+            // Update cancelled cases
+            updateAdminCancelledCases(cases);
+        }
+        
+        // Populate doctor tables
+        function populateRecentCasesTable(cases) {
+            const tableBody = document.querySelector('#recent-cases-table tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            // Show only the 5 most recent cases
+            const recentCases = cases.slice(0, 5);
+            
+            if (recentCases.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No cases found</td></tr>';
+                return;
+            }
+            
+            recentCases.forEach(caseData => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="case-id" data-case-id="${caseData._id}">${caseData.caseId}</td>
+                    <td>${caseData.patient}</td>
+                    <td>${caseData.age}</td>
+                    <td>${caseData.orderDate}</td>
+                    <td><span class="status ${getStatusClass(caseData.status)}">${caseData.status}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to case IDs
+            document.querySelectorAll('#recent-cases-table .case-id').forEach(caseId => {
+                caseId.addEventListener('click', function() {
+                    const caseId = this.getAttribute('data-case-id');
+                    showCaseDetails(caseId);
+                });
+            });
+        }
+        
+        function populateAllCasesTable(cases) {
+            const tableBody = document.querySelector('#all-cases-table tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            if (cases.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No cases found</td></tr>';
+                return;
+            }
+            
+            cases.forEach(caseData => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="case-id" data-case-id="${caseData._id}">${caseData.caseId}</td>
+                    <td>${caseData.patient}</td>
+                    <td>${caseData.age}</td>
+                    <td>${caseData.orderDate}</td>
+                    <td>${caseData.doctor}</td>
+                    <td><span class="status ${getStatusClass(caseData.status)}">${caseData.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm view-case" data-case-id="${caseData._id}">View</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to view buttons and case IDs
+            document.querySelectorAll('#all-cases-table .view-case, #all-cases-table .case-id').forEach(element => {
+                element.addEventListener('click', function() {
+                    const caseId = this.getAttribute('data-case-id');
+                    showCaseDetails(caseId);
+                });
+            });
+        }
+        
+        function populateApprovedCasesTable(cases) {
+            const tableBody = document.querySelector('#approved-cases-table tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            const approvedCases = cases.filter(caseData => 
+                caseData.status === "Approved" || caseData.status === "Completed"
+            );
+            
+            if (approvedCases.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No approved cases found</td></tr>';
+                return;
+            }
+            
+            approvedCases.forEach(caseData => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="case-id" data-case-id="${caseData._id}">${caseData.caseId}</td>
+                    <td>${caseData.patient}</td>
+                    <td>${caseData.age}</td>
+                    <td>${caseData.orderDate}</td>
+                    <td>${caseData.doctor}</td>
+                    <td>${caseData.updatedAt ? new Date(caseData.updatedAt).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm view-case" data-case-id="${caseData._id}">View</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to view buttons and case IDs
+            document.querySelectorAll('#approved-cases-table .view-case, #approved-cases-table .case-id').forEach(element => {
+                element.addEventListener('click', function() {
+                    const caseId = this.getAttribute('data-case-id');
+                    showCaseDetails(caseId);
+                });
+            });
+        }
+        
+        function populatePendingCasesTable(cases) {
+            const tableBody = document.querySelector('#pending-cases-table tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            const pendingCases = cases.filter(caseData => caseData.status === "Pending Approval");
+            
+            if (pendingCases.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No pending approval cases found</td></tr>';
+                return;
+            }
+            
+            pendingCases.forEach(caseData => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="case-id" data-case-id="${caseData._id}">${caseData.caseId}</td>
+                    <td>${caseData.patient}</td>
+                    <td>${caseData.age}</td>
+                    <td>${caseData.orderDate}</td>
+                    <td>${caseData.doctor}</td>
+                    <td><span class="status ${getStatusClass(caseData.status)}">${caseData.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm view-case" data-case-id="${caseData._id}">View</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to view buttons and case IDs
+            document.querySelectorAll('#pending-cases-table .view-case, #pending-cases-table .case-id').forEach(element => {
+                element.addEventListener('click', function() {
+                    const caseId = this.getAttribute('data-case-id');
+                    showCaseDetails(caseId);
+                });
+            });
+        }
+        
+        function populateTreatmentCasesTable(cases) {
+            const tableBody = document.querySelector('#treatment-cases-table tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            const treatmentCases = cases.filter(caseData => caseData.status === "Pending Treatment Plan");
+            
+            if (treatmentCases.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No pending treatment plan cases found</td></tr>';
+                return;
+            }
+            
+            treatmentCases.forEach(caseData => {
+                // Calculate days since registration
+                const orderDate = new Date(caseData.orderDate);
+                const today = new Date();
+                const diffTime = Math.abs(today - orderDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="case-id" data-case-id="${caseData._id}">${caseData.caseId}</td>
+                    <td>${caseData.patient}</td>
+                    <td>${caseData.age}</td>
+                    <td>${caseData.orderDate}</td>
+                    <td>${caseData.doctor}</td>
+                    <td>${diffDays}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm view-case" data-case-id="${caseData._id}">View</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to view buttons and case IDs
+            document.querySelectorAll('#treatment-cases-table .view-case, #treatment-cases-table .case-id').forEach(element => {
+                element.addEventListener('click', function() {
+                    const caseId = this.getAttribute('data-case-id');
+                    showCaseDetails(caseId);
+                });
+            });
+        }
+        
+        // Populate admin tables
+        function updateAdminRecentActivity(cases) {
+            const recentActivity = document.getElementById('admin-recent-activity');
+            if (!recentActivity) return;
+            
+            const recentCases = cases
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 5);
+            
+            if (recentCases.length === 0) {
+                recentActivity.innerHTML = `
+                    <div class="admin-empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No Cases Found</h3>
+                        <p>No cases have been added to the system yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recentActivity.innerHTML = recentCases.map(caseItem => `
+                <div class="admin-case-item">
+                    <div class="admin-case-info">
+                        <div class="admin-case-id">${caseItem.caseId || caseItem._id || 'CP-' + caseItem._id.substring(0, 4)}</div>
+                        <div class="admin-case-patient">Patient: ${caseItem.patientName || caseItem.patient || 'Unknown Patient'}</div>
+                        <div class="admin-case-dentist">Dentist: ${caseItem.dentistName || caseItem.doctor || 'Unknown Dentist'}</div>
+                        <div class="admin-case-dentist">Status: ${caseItem.status || 'Unknown Status'}</div>
+                    </div>
+                    <div class="admin-case-actions">
+                        <button class="admin-action-btn" title="View Details" onclick="viewCaseDetails('${caseItem._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateAdminPendingCases(cases) {
+            const pendingCasesList = document.getElementById('admin-pending-cases-list');
+            if (!pendingCasesList) return;
+            
+            const pendingCases = cases.filter(c => 
+                c.status === 'pending' || c.status === 'Pending' || 
+                c.status === 'pending upload' || c.status === 'Pending Upload' ||
+                c.status === 'Pending Treatment Plan'
+            );
+            
+            if (pendingCases.length === 0) {
+                pendingCasesList.innerHTML = `
+                    <div class="admin-empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>No Pending Cases</h3>
+                        <p>All cases are up to date.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            pendingCasesList.innerHTML = pendingCases.map(caseItem => `
+                <div class="admin-case-item">
+                    <div class="admin-case-info">
+                        <div class="admin-case-id">${caseItem.caseId || caseItem._id || 'CP-' + caseItem._id.substring(0, 4)}</div>
+                        <div class="admin-case-patient">Patient: ${caseItem.patientName || caseItem.patient || 'Unknown Patient'}</div>
+                        <div class="admin-case-dentist">Dentist: ${caseItem.dentistName || caseItem.doctor || 'Unknown Dentist'}</div>
+                    </div>
+                    <div class="admin-case-status">
+                        <span class="admin-status-badge admin-status-pending">${caseItem.status || 'Pending'}</span>
+                    </div>
+                    <div class="admin-case-actions">
+                        <button class="admin-action-btn" title="View Details" onclick="viewCaseDetails('${caseItem._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="admin-action-btn" title="Upload Treatment Plan" onclick="uploadTreatmentPlan('${caseItem._id}')">
+                            <i class="fas fa-upload"></i>
+                        </button>
+                        <button class="admin-action-btn" title="Contact Doctor" onclick="contactDoctor('${caseItem.doctor}')">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateAdminRevisionCases(cases) {
+            const revisionCasesList = document.getElementById('admin-revision-cases-list');
+            if (!revisionCasesList) return;
+            
+            const revisionCases = cases.filter(c => 
+                c.status === 'revision' || c.status === 'Revision' || 
+                c.status === 'revision requested' || c.status === 'Revision Requested' ||
+                c.status === 'Pending Revision'
+            );
+            
+            if (revisionCases.length === 0) {
+                revisionCasesList.innerHTML = `
+                    <div class="admin-empty-state">
+                        <i class="fas fa-redo"></i>
+                        <h3>No Revision Requests</h3>
+                        <p>No cases require revision at this time.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            revisionCasesList.innerHTML = revisionCases.map(caseItem => `
+                <div class="admin-case-item">
+                    <div class="admin-case-info">
+                        <div class="admin-case-id">${caseItem.caseId || caseItem._id || 'CP-' + caseItem._id.substring(0, 4)}</div>
+                        <div class="admin-case-patient">Patient: ${caseItem.patientName || caseItem.patient || 'Unknown Patient'}</div>
+                        <div class="admin-case-dentist">Dentist: ${caseItem.dentistName || caseItem.doctor || 'Unknown Dentist'}</div>
+                    </div>
+                    <div class="admin-case-status">
+                        <span class="admin-status-badge admin-status-revision">${caseItem.status || 'Revision'}</span>
+                    </div>
+                    <div class="admin-case-actions">
+                        <button class="admin-action-btn" title="View Details" onclick="viewCaseDetails('${caseItem._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="admin-action-btn" title="Process Revision" onclick="processRevision('${caseItem._id}')">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateAdminHoldCases(cases) {
+            const holdCasesList = document.getElementById('admin-hold-cases-list');
+            if (!holdCasesList) return;
+            
+            const holdCases = cases.filter(c => 
+                c.status === 'hold' || c.status === 'Hold' || 
+                c.status === 'on hold' || c.status === 'On Hold'
+            );
+            
+            if (holdCases.length === 0) {
+                holdCasesList.innerHTML = `
+                    <div class="admin-empty-state">
+                        <i class="fas fa-pause-circle"></i>
+                        <h3>No Cases On Hold</h3>
+                        <p>No cases are currently on hold.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            holdCasesList.innerHTML = holdCases.map(caseItem => `
+                <div class="admin-case-item">
+                    <div class="admin-case-info">
+                        <div class="admin-case-id">${caseItem.caseId || caseItem._id || 'CP-' + caseItem._id.substring(0, 4)}</div>
+                        <div class="admin-case-patient">Patient: ${caseItem.patientName || caseItem.patient || 'Unknown Patient'}</div>
+                        <div class="admin-case-dentist">Dentist: ${caseItem.dentistName || caseItem.doctor || 'Unknown Dentist'}</div>
+                    </div>
+                    <div class="admin-case-status">
+                        <span class="admin-status-badge admin-status-hold">${caseItem.status || 'On Hold'}</span>
+                    </div>
+                    <div class="admin-case-actions">
+                        <button class="admin-action-btn" title="View Details" onclick="viewCaseDetails('${caseItem._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="admin-action-btn" title="Resume Case" onclick="resumeCase('${caseItem._id}')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateAdminCancelledCases(cases) {
+            const cancelledCasesList = document.getElementById('admin-cancelled-cases-list');
+            if (!cancelledCasesList) return;
+            
+            const cancelledCases = cases.filter(c => 
+                c.status === 'cancelled' || c.status === 'Cancelled'
+            );
+            
+            if (cancelledCases.length === 0) {
+                cancelledCasesList.innerHTML = `
+                    <div class="admin-empty-state">
+                        <i class="fas fa-times-circle"></i>
+                        <h3>No Cancelled Cases</h3>
+                        <p>No cases have been cancelled.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            cancelledCasesList.innerHTML = cancelledCases.map(caseItem => `
+                <div class="admin-case-item">
+                    <div class="admin-case-info">
+                        <div class="admin-case-id">${caseItem.caseId || caseItem._id || 'CP-' + caseItem._id.substring(0, 4)}</div>
+                        <div class="admin-case-patient">Patient: ${caseItem.patientName || caseItem.patient || 'Unknown Patient'}</div>
+                        <div class="admin-case-dentist">Dentist: ${caseItem.dentistName || caseItem.doctor || 'Unknown Dentist'}</div>
+                    </div>
+                    <div class="admin-case-status">
+                        <span class="admin-status-badge admin-status-cancelled">${caseItem.status || 'Cancelled'}</span>
+                    </div>
+                    <div class="admin-case-actions">
+                        <button class="admin-action-btn" title="View Details" onclick="viewCaseDetails('${caseItem._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="admin-action-btn" title="Restore Case" onclick="restoreCase('${caseItem._id}')">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Helper function to get status class
+        function getStatusClass(status) {
+            switch(status) {
+                case "Approved":
+                case "Completed":
+                    return "status-approved";
+                case "Pending Treatment Plan":
+                    return "status-treatment";
+                case "Pending Approval":
+                case "Pending Revision":
+                    return "status-pending";
+                default:
+                    return "";
+            }
+        }
+        
+        // Show case details
+        function showCaseDetails(caseId) {
+            const caseData = cases.find(c => c._id === caseId);
+            if (!caseData) return;
+            
+            const modalTitle = document.getElementById('modalCaseTitle');
+            const modalContent = document.getElementById('modalCaseContent');
+            
+            modalTitle.textContent = `Case Details - ${caseData.caseId}`;
+            
+            modalContent.innerHTML = `
+                <div class="case-info">
+                    <div class="info-item">
+                        <div class="info-label">Patient</div>
+                        <div class="info-value">${caseData.patient}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Age</div>
+                        <div class="info-value">${caseData.age}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Doctor</div>
+                        <div class="info-value">${caseData.doctor}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Order Date</div>
+                        <div class="info-value">${caseData.orderDate}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value"><span class="status ${getStatusClass(caseData.status)}">${caseData.status}</span></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Impression Type</div>
+                        <div class="info-value">${caseData.impressionType}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Arch Selection</div>
+                        <div class="info-value">${caseData.archSelection}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Selected Teeth</div>
+                        <div class="info-value">${caseData.selectedTeeth ? caseData.selectedTeeth.join(', ') : 'None'}</div>
+                    </div>
+                </div>
+                <div class="treatment-plan">
+                    <h4>Special Instructions</h4>
+                    <p>${caseData.instructions || 'No special instructions provided.'}</p>
+                </div>
+            `;
+            
+            document.getElementById('caseModal').classList.add('active');
+        }
+        
+        // Admin functions
+        async function uploadTreatmentPlan(caseId) {
+            try {
+                await mongoAPI.updateCase(caseId, { 
+                    status: 'Pending Approval',
+                    updatedAt: new Date()
+                });
+                showNotification(`Treatment plan uploaded for case ${caseId}`);
+                loadCases(); // Refresh data
+            } catch (error) {
+                showNotification('Error uploading treatment plan', 'error');
+            }
+        }
+        
+        function contactDoctor(doctorName) {
+            showNotification(`Contacting ${doctorName}`);
+        }
+        
+        async function processRevision(caseId) {
+            try {
+                await mongoAPI.updateCase(caseId, { 
+                    status: 'Pending Approval',
+                    updatedAt: new Date()
+                });
+                showNotification(`Revision processed for case ${caseId}`);
+                loadCases(); // Refresh data
+            } catch (error) {
+                showNotification('Error processing revision', 'error');
+            }
+        }
+        
+        async function resumeCase(caseId) {
+            try {
+                await mongoAPI.updateCase(caseId, { 
+                    status: 'Pending Treatment Plan',
+                    updatedAt: new Date()
+                });
+                showNotification(`Case ${caseId} resumed`);
+                loadCases(); // Refresh data
+            } catch (error) {
+                showNotification('Error resuming case', 'error');
+            }
+        }
+        
+        async function restoreCase(caseId) {
+            try {
+                await mongoAPI.updateCase(caseId, { 
+                    status: 'Pending Treatment Plan',
+                    updatedAt: new Date()
+                });
+                showNotification(`Case ${caseId} restored`);
+                loadCases(); // Refresh data
+            } catch (error) {
+                showNotification('Error restoring case', 'error');
+            }
+        }
+        
+        // Switch between admin sections
+        function switchAdminSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update page title
+            const pageTitle = document.getElementById('adminPageTitle');
+            const navItem = document.querySelector(`.admin-nav-item[data-section="${sectionId}"]`);
+            if (navItem) {
+                pageTitle.textContent = navItem.querySelector('span').textContent;
+            }
+        }
+        
+        // Page display functions
+        function showLoginPage() {
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('doctorPortal').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+        
+        function showDoctorPortal() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('doctorPortal').style.display = 'block';
+            document.getElementById('adminDashboard').style.display = 'none';
+            
+            // Setup doctor portal
+            setupDoctorPortal();
+        }
+        
+        function showAdminDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('doctorPortal').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'flex';
+            
+            // Setup admin dashboard
+            setupAdminDashboard();
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userFullName');
+            localStorage.removeItem('userSpecialty');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userType');
+            
+            currentUser = null;
+            
+            showLoginPage();
+        }
+        
+        // Load demo data (fallback)
+        function loadDemoData() {
+            // Add some demo cases
+            cases = [
+                {
+                    _id: 'case-1001',
+                    caseId: 'CP-2024-001',
+                    patient: 'John Smith',
+                    age: 28,
+                    orderDate: '2024-01-15',
+                    doctor: 'Dr. Hilda Naeimi',
+                    status: 'Pending Treatment Plan',
+                    instructions: 'Mild crowding, needs IPR',
+                    impressionType: 'digital',
+                    uploadType: 'stl',
+                    archSelection: 'both',
+                    selectedTeeth: ['11', '12', '21', '22'],
+                    createdAt: new Date('2024-01-15'),
+                    updatedAt: new Date('2024-01-15'),
+                    submittedBy: 'dr.hilda',
+                    doctorEmail: 'dr.hilda'
+                },
+                {
+                    _id: 'case-1002',
+                    caseId: 'CP-2024-002',
+                    patient: 'Sarah Johnson',
+                    age: 35,
+                    orderDate: '2024-01-20',
+                    doctor: 'Dr. Robert Smith',
+                    status: 'Pending Approval',
+                    instructions: 'Deep bite correction',
+                    impressionType: 'physical',
+                    uploadType: 'images',
+                    archSelection: 'both',
+                    selectedTeeth: ['14', '15', '16', '24', '25', '26'],
+                    createdAt: new Date('2024-01-20'),
+                    updatedAt: new Date('2024-01-20'),
+                    submittedBy: 'dr.smith',
+                    doctorEmail: 'dr.smith'
+                },
+                {
+                    _id: 'case-1003',
+                    caseId: 'CP-2024-003',
+                    patient: 'Michael Brown',
+                    age: 42,
+                    orderDate: '2024-01-25',
+                    doctor: 'Dr. Michael Johnson',
+                    status: 'Approved',
+                    instructions: 'Class II correction',
+                    impressionType: 'digital',
+                    uploadType: 'stl',
+                    archSelection: 'upper',
+                    selectedTeeth: ['11', '12', '13', '21', '22', '23'],
+                    createdAt: new Date('2024-01-25'),
+                    updatedAt: new Date('2024-02-01'),
+                    submittedBy: 'dr.johnson',
+                    doctorEmail: 'dr.johnson'
+                }
+            ];
+            
+            nextCaseId = 1004;
+            
+            // Update dashboard
+            if (currentUser.type === 'doctor') {
+                updateDoctorDashboard();
+            } else {
+                updateAdminDashboard();
+            }
+            
+            showNotification("Using demo data - MongoDB connection failed", "warning");
+        }
+    </script>
+</body>
+</html>
