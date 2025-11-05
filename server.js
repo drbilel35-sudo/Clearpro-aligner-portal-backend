@@ -1,12 +1,12 @@
-// server.js (Backend - Node.js/Express)
+// server.js (Updated with Native MongoDB Driver)
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');
+const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
 
-// Fixed CORS configuration
+// CORS configuration
 app.use(cors({
     origin: [
         'http://localhost:3000',
@@ -18,94 +18,61 @@ app.use(cors({
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    credentials: false, // Changed to false when using multiple origins
-    optionsSuccessStatus: 200
+    credentials: false
 }));
 
 app.use(express.json());
 
-const MONGODB_API_URL = process.env.MONGODB_API_URL;
-const MONGODB_API_KEY = process.env.MONGODB_API_KEY;
+// Your MongoDB connection string (replace with your actual password)
+const MONGODB_URI = 'mongodb+srv://bilsheikh5_db_user:QHxl4ahWv0FE2Lps@cluster0.r2hta0h.mongodb.net/clearpro-aligner?retryWrites=true&w=majority';
 const PORT = process.env.PORT || 3001;
 
-// Validate environment variables on startup
-if (!MONGODB_API_URL || !MONGODB_API_KEY) {
-    console.error('❌ Missing required environment variables:');
-    console.error('MONGODB_API_URL:', MONGODB_API_URL ? 'Set' : 'Missing');
-    console.error('MONGODB_API_KEY:', MONGODB_API_KEY ? 'Set' : 'Missing');
-    console.log('💡 Please check your Render environment variables');
+let db;
+let client;
+
+// Connect to MongoDB
+async function connectToMongoDB() {
+    try {
+        console.log('🔗 Connecting to MongoDB...');
+        client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        db = client.db('clearpro-aligner');
+        console.log('✅ Successfully connected to MongoDB');
+        
+        // Create indexes
+        await db.collection('cases').createIndex({ caseId: 1 }, { unique: true });
+        await db.collection('cases').createIndex({ createdAt: -1 });
+        
+        return true;
+    } catch (error) {
+        console.error('❌ MongoDB connection failed:', error.message);
+        return false;
+    }
 }
 
-// Simple in-memory storage as fallback
+// Memory storage fallback
 let memoryStorage = {
     cases: []
 };
 
-// Helper function to generate MongoDB-style ID
 function generateId() {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+    return new ObjectId().toString();
 }
 
-// MongoDB connection test
-async function testMongoDBConnection() {
-    if (!MONGODB_API_URL || !MONGODB_API_KEY) {
-        console.log('⚠️  MongoDB credentials not found, using memory storage');
-        return false;
-    }
-
-    try {
-        const response = await axios.post(`${MONGODB_API_URL}/action/find`, {
-            collection: 'cases',
-            database: 'clearpro-aligner',
-            dataSource: 'Cluster0',
-            filter: {}
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'api-key': MONGODB_API_KEY
-            },
-            timeout: 10000
-        });
-        console.log('✅ MongoDB connection successful');
-        return true;
-    } catch (error) {
-        console.error('❌ MongoDB connection failed:', error.message);
-        console.log('⚠️  Falling back to memory storage');
-        return false;
-    }
-}
-
+// Initialize connection
 let useMongoDB = false;
-
-// Initialize connection on startup
-testMongoDBConnection().then(connected => {
-    useMongoDB = connected;
-});
 
 // Routes
 app.get('/api/cases', async (req, res) => {
     try {
-        if (useMongoDB) {
-            const response = await axios.post(`${MONGODB_API_URL}/action/find`, {
-                collection: 'cases',
-                database: 'clearpro-aligner',
-                dataSource: 'Cluster0',
-                filter: {}
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'api-key': MONGODB_API_KEY
-                },
-                timeout: 10000
-            });
-            res.json(response.data.documents || []);
+        if (useMongoDB && db) {
+            const cases = await db.collection('cases').find({}).sort({ createdAt: -1 }).toArray();
+            res.json(cases);
         } else {
-            // Fallback to memory storage
             res.json(memoryStorage.cases);
         }
     } catch (error) {
         console.error('Error fetching cases:', error.message);
-        // Fallback to memory storage on error
         res.json(memoryStorage.cases);
     }
 });
@@ -119,28 +86,25 @@ app.post('/api/cases', async (req, res) => {
             updatedAt: new Date()
         };
 
-        if (useMongoDB) {
-            const response = await axios.post(`${MONGODB_API_URL}/action/insertOne`, {
-                collection: 'cases',
-                database: 'clearpro-aligner',
-                dataSource: 'Cluster0',
-                document: caseData
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'api-key': MONGODB_API_KEY
-                },
-                timeout: 10000
+        if (useMongoDB && db) {
+            const result = await db.collection('cases').insertOne(caseData);
+            console.log('✅ Case created in MongoDB:', caseData.caseId);
+            res.json({ 
+                insertedId: result.insertedId, 
+                case: caseData,
+                message: 'Case created successfully'
             });
-            res.json({ insertedId: caseData._id, ...response.data });
         } else {
-            // Fallback to memory storage
             memoryStorage.cases.push(caseData);
-            res.json({ insertedId: caseData._id, case: caseData });
+            console.log('✅ Case created in memory storage:', caseData.caseId);
+            res.json({ 
+                insertedId: caseData._id, 
+                case: caseData,
+                message: 'Case created successfully (memory storage)'
+            });
         }
     } catch (error) {
         console.error('Error creating case:', error.message);
-        // Fallback to memory storage
         const caseData = {
             ...req.body,
             _id: generateId(),
@@ -148,7 +112,11 @@ app.post('/api/cases', async (req, res) => {
             updatedAt: new Date()
         };
         memoryStorage.cases.push(caseData);
-        res.json({ insertedId: caseData._id, case: caseData });
+        res.json({ 
+            insertedId: caseData._id, 
+            case: caseData,
+            message: 'Case created with fallback storage'
+        });
     }
 });
 
@@ -160,27 +128,25 @@ app.put('/api/cases/:id', async (req, res) => {
             updatedAt: new Date()
         };
 
-        if (useMongoDB) {
-            const response = await axios.post(`${MONGODB_API_URL}/action/updateOne`, {
-                collection: 'cases',
-                database: 'clearpro-aligner',
-                dataSource: 'Cluster0',
-                filter: { _id: { $oid: caseId } },
-                update: { $set: updateData }
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'api-key': MONGODB_API_KEY
-                },
-                timeout: 10000
+        if (useMongoDB && db) {
+            const result = await db.collection('cases').updateOne(
+                { _id: new ObjectId(caseId) },
+                { $set: updateData }
+            );
+            
+            if (result.matchedCount === 0) {
+                return res.status(404).json({ error: 'Case not found' });
+            }
+            
+            res.json({ 
+                modifiedCount: result.modifiedCount,
+                message: 'Case updated successfully'
             });
-            res.json(response.data);
         } else {
-            // Fallback to memory storage
             const index = memoryStorage.cases.findIndex(c => c._id === caseId);
             if (index !== -1) {
                 memoryStorage.cases[index] = { ...memoryStorage.cases[index], ...updateData };
-                res.json({ modifiedCount: 1 });
+                res.json({ modifiedCount: 1, message: 'Case updated successfully' });
             } else {
                 res.status(404).json({ error: 'Case not found' });
             }
@@ -195,26 +161,23 @@ app.delete('/api/cases/:id', async (req, res) => {
     try {
         const caseId = req.params.id;
 
-        if (useMongoDB) {
-            const response = await axios.post(`${MONGODB_API_URL}/action/deleteOne`, {
-                collection: 'cases',
-                database: 'clearpro-aligner',
-                dataSource: 'Cluster0',
-                filter: { _id: { $oid: caseId } }
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'api-key': MONGODB_API_KEY
-                },
-                timeout: 10000
+        if (useMongoDB && db) {
+            const result = await db.collection('cases').deleteOne(
+                { _id: new ObjectId(caseId) }
+            );
+            
+            res.json({ 
+                deletedCount: result.deletedCount,
+                message: 'Case deleted successfully'
             });
-            res.json(response.data);
         } else {
-            // Fallback to memory storage
             const initialLength = memoryStorage.cases.length;
             memoryStorage.cases = memoryStorage.cases.filter(c => c._id !== caseId);
             const deletedCount = initialLength - memoryStorage.cases.length;
-            res.json({ deletedCount });
+            res.json({ 
+                deletedCount,
+                message: 'Case deleted successfully'
+            });
         }
     } catch (error) {
         console.error('Error deleting case:', error.message);
@@ -222,7 +185,7 @@ app.delete('/api/cases/:id', async (req, res) => {
     }
 });
 
-// Health check endpoint with detailed info
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
     const healthInfo = {
         status: 'OK',
@@ -233,23 +196,12 @@ app.get('/api/health', async (req, res) => {
         memoryCasesCount: memoryStorage.cases.length
     };
 
-    // Test MongoDB connection if credentials are available
-    if (MONGODB_API_URL && MONGODB_API_KEY) {
+    // Test MongoDB connection
+    if (useMongoDB && db) {
         try {
-            await axios.post(`${MONGODB_API_URL}/action/find`, {
-                collection: 'cases',
-                database: 'clearpro-aligner',
-                dataSource: 'Cluster0',
-                filter: {},
-                limit: 1
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'api-key': MONGODB_API_KEY
-                },
-                timeout: 5000
-            });
+            await db.command({ ping: 1 });
             healthInfo.database = 'MongoDB (Connected)';
+            healthInfo.mongoDBCasesCount = await db.collection('cases').countDocuments();
         } catch (error) {
             healthInfo.database = 'MongoDB (Connection Failed)';
             healthInfo.databaseError = error.message;
@@ -266,35 +218,43 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         status: 'Running',
         endpoints: {
-            health: '/api/health',
-            cases: '/api/cases'
+            health: 'GET /api/health',
+            cases: 'GET /api/cases',
+            createCase: 'POST /api/cases',
+            updateCase: 'PUT /api/cases/:id',
+            deleteCase: 'DELETE /api/cases/:id'
         },
         database: useMongoDB ? 'MongoDB' : 'Memory Storage'
     });
 });
 
-// Add sample data for memory storage
-app.post('/api/seed', (req, res) => {
-    memoryStorage.cases = [
-        {
-            _id: 'demo-1',
-            caseId: 'CP-2024-001',
-            patient: 'John Smith',
-            age: 28,
-            orderDate: '2024-01-15',
-            doctor: 'Dr. Hilda Naeimi',
-            status: 'Pending Treatment Plan',
-            impressionType: 'physical',
-            uploadType: 'stl',
-            archSelection: 'both',
-            selectedTeeth: ['11', '12', '21', '22'],
-            instructions: 'Demo case - Backend is working!',
-            submittedBy: 'dr.hilda',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        }
-    ];
-    res.json({ message: 'Sample data loaded', cases: memoryStorage.cases });
+// Add sample data
+app.post('/api/seed', async (req, res) => {
+    const sampleCase = {
+        _id: generateId(),
+        caseId: 'CP-2024-001',
+        patient: 'John Smith',
+        age: 28,
+        orderDate: '2024-01-15',
+        doctor: 'Dr. Hilda Naeimi',
+        status: 'Pending Treatment Plan',
+        impressionType: 'physical',
+        uploadType: 'stl',
+        archSelection: 'both',
+        selectedTeeth: ['11', '12', '21', '22'],
+        instructions: 'Sample case - Backend is working with MongoDB!',
+        submittedBy: 'dr.hilda',
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
+
+    if (useMongoDB && db) {
+        await db.collection('cases').insertOne(sampleCase);
+        res.json({ message: 'Sample data loaded to MongoDB', case: sampleCase });
+    } else {
+        memoryStorage.cases.push(sampleCase);
+        res.json({ message: 'Sample data loaded to memory', case: sampleCase });
+    }
 });
 
 // Error handling middleware
@@ -314,14 +274,27 @@ app.use('*', (req, res) => {
             health: 'GET /api/health',
             cases: 'GET /api/cases',
             createCase: 'POST /api/cases',
-            root: 'GET /'
+            updateCase: 'PUT /api/cases/:id',
+            deleteCase: 'DELETE /api/cases/:id',
+            seed: 'POST /api/seed'
         }
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Health check: https://clearpro-aligner-portal-backend.onrender.com/api/health`);
-    console.log(`🔗 API Base URL: https://clearpro-aligner-portal-backend.onrender.com/api`);
-    console.log(`💾 Storage: ${useMongoDB ? 'MongoDB' : 'Memory (MongoDB not configured)'}`);
-});
+// Initialize server
+async function startServer() {
+    useMongoDB = await connectToMongoDB();
+    
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📊 Health check: https://clearpro-aligner-portal-backend.onrender.com/api/health`);
+        console.log(`🔗 API Base URL: https://clearpro-aligner-portal-backend.onrender.com/api`);
+        console.log(`💾 Storage: ${useMongoDB ? 'MongoDB' : 'Memory (MongoDB not available)'}`);
+        
+        if (!useMongoDB) {
+            console.log('⚠️  Running in fallback mode - data will be lost on server restart');
+        }
+    });
+}
+
+startServer().catch(console.error);
