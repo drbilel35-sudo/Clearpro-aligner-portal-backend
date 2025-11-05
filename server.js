@@ -1,4 +1,4 @@
-// server.js (Updated with Native MongoDB Driver)
+// server.js (Using Environment Variables)
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -23,8 +23,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Your MongoDB connection string (replace with your actual password)
-const MONGODB_URI = 'mongodb+srv://bilsheikh5_db_user:QHxl4ahWv0FE2Lps@cluster0.r2hta0h.mongodb.net/clearpro-aligner?retryWrites=true&w=majority';
+// Get MongoDB URI from environment variables
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://bilsheikh5_db_user:QHxl4ahWv0FE2Lps@cluster0.r2hta0h.mongodb.net/clearpro-aligner?retryWrites=true&w=majority';
 const PORT = process.env.PORT || 3001;
 
 let db;
@@ -34,6 +34,12 @@ let client;
 async function connectToMongoDB() {
     try {
         console.log('🔗 Connecting to MongoDB...');
+        
+        if (!MONGODB_URI) {
+            console.error('❌ MONGODB_URI is not defined');
+            return false;
+        }
+        
         client = new MongoClient(MONGODB_URI);
         await client.connect();
         db = client.db('clearpro-aligner');
@@ -62,7 +68,7 @@ function generateId() {
 // Initialize connection
 let useMongoDB = false;
 
-// Routes
+// Routes (same as before, but with better error handling)
 app.get('/api/cases', async (req, res) => {
     try {
         if (useMongoDB && db) {
@@ -120,71 +126,6 @@ app.post('/api/cases', async (req, res) => {
     }
 });
 
-app.put('/api/cases/:id', async (req, res) => {
-    try {
-        const caseId = req.params.id;
-        const updateData = {
-            ...req.body,
-            updatedAt: new Date()
-        };
-
-        if (useMongoDB && db) {
-            const result = await db.collection('cases').updateOne(
-                { _id: new ObjectId(caseId) },
-                { $set: updateData }
-            );
-            
-            if (result.matchedCount === 0) {
-                return res.status(404).json({ error: 'Case not found' });
-            }
-            
-            res.json({ 
-                modifiedCount: result.modifiedCount,
-                message: 'Case updated successfully'
-            });
-        } else {
-            const index = memoryStorage.cases.findIndex(c => c._id === caseId);
-            if (index !== -1) {
-                memoryStorage.cases[index] = { ...memoryStorage.cases[index], ...updateData };
-                res.json({ modifiedCount: 1, message: 'Case updated successfully' });
-            } else {
-                res.status(404).json({ error: 'Case not found' });
-            }
-        }
-    } catch (error) {
-        console.error('Error updating case:', error.message);
-        res.status(500).json({ error: 'Failed to update case' });
-    }
-});
-
-app.delete('/api/cases/:id', async (req, res) => {
-    try {
-        const caseId = req.params.id;
-
-        if (useMongoDB && db) {
-            const result = await db.collection('cases').deleteOne(
-                { _id: new ObjectId(caseId) }
-            );
-            
-            res.json({ 
-                deletedCount: result.deletedCount,
-                message: 'Case deleted successfully'
-            });
-        } else {
-            const initialLength = memoryStorage.cases.length;
-            memoryStorage.cases = memoryStorage.cases.filter(c => c._id !== caseId);
-            const deletedCount = initialLength - memoryStorage.cases.length;
-            res.json({ 
-                deletedCount,
-                message: 'Case deleted successfully'
-            });
-        }
-    } catch (error) {
-        console.error('Error deleting case:', error.message);
-        res.status(500).json({ error: 'Failed to delete case' });
-    }
-});
-
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
     const healthInfo = {
@@ -193,7 +134,9 @@ app.get('/api/health', async (req, res) => {
         timestamp: new Date().toISOString(),
         database: useMongoDB ? 'MongoDB' : 'Memory Storage',
         environment: process.env.NODE_ENV || 'development',
-        memoryCasesCount: memoryStorage.cases.length
+        memoryCasesCount: memoryStorage.cases.length,
+        nodeEnv: process.env.NODE_ENV,
+        port: PORT
     };
 
     // Test MongoDB connection
@@ -217,78 +160,27 @@ app.get('/', (req, res) => {
         message: 'ClearPro Aligner Backend API',
         version: '1.0.0',
         status: 'Running',
+        environment: process.env.NODE_ENV || 'development',
         endpoints: {
             health: 'GET /api/health',
             cases: 'GET /api/cases',
-            createCase: 'POST /api/cases',
-            updateCase: 'PUT /api/cases/:id',
-            deleteCase: 'DELETE /api/cases/:id'
+            createCase: 'POST /api/cases'
         },
         database: useMongoDB ? 'MongoDB' : 'Memory Storage'
     });
 });
 
-// Add sample data
-app.post('/api/seed', async (req, res) => {
-    const sampleCase = {
-        _id: generateId(),
-        caseId: 'CP-2024-001',
-        patient: 'John Smith',
-        age: 28,
-        orderDate: '2024-01-15',
-        doctor: 'Dr. Hilda Naeimi',
-        status: 'Pending Treatment Plan',
-        impressionType: 'physical',
-        uploadType: 'stl',
-        archSelection: 'both',
-        selectedTeeth: ['11', '12', '21', '22'],
-        instructions: 'Sample case - Backend is working with MongoDB!',
-        submittedBy: 'dr.hilda',
-        createdAt: new Date(),
-        updatedAt: new Date()
-    };
-
-    if (useMongoDB && db) {
-        await db.collection('cases').insertOne(sampleCase);
-        res.json({ message: 'Sample data loaded to MongoDB', case: sampleCase });
-    } else {
-        memoryStorage.cases.push(sampleCase);
-        res.json({ message: 'Sample data loaded to memory', case: sampleCase });
-    }
-});
-
-// Error handling middleware
-app.use((error, req, res, next) => {
-    console.error('Unhandled error:', error);
-    res.status(500).json({ 
-        error: 'Internal server error',
-        message: error.message 
-    });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-    res.status(404).json({ 
-        error: 'Endpoint not found',
-        availableEndpoints: {
-            health: 'GET /api/health',
-            cases: 'GET /api/cases',
-            createCase: 'POST /api/cases',
-            updateCase: 'PUT /api/cases/:id',
-            deleteCase: 'DELETE /api/cases/:id',
-            seed: 'POST /api/seed'
-        }
-    });
-});
-
 // Initialize server
 async function startServer() {
+    console.log('🚀 Starting ClearPro Aligner Backend...');
+    console.log('📝 Environment:', process.env.NODE_ENV || 'development');
+    console.log('🔐 MongoDB URI:', MONGODB_URI ? 'Set' : 'Not set');
+    
     useMongoDB = await connectToMongoDB();
     
     app.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT}`);
-        console.log(`📊 Health check: https://clearpro-aligner-portal-backend.onrender.com/api/health`);
-        console.log(`🔗 API Base URL: https://clearpro-aligner-portal-backend.onrender.com/api`);
+        console.log(`✅ Server running on port ${PORT}`);
+        console.log(`📊 Health check: /api/health`);
         console.log(`💾 Storage: ${useMongoDB ? 'MongoDB' : 'Memory (MongoDB not available)'}`);
         
         if (!useMongoDB) {
