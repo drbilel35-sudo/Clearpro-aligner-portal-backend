@@ -5,7 +5,29 @@ const cors = require('cors');
 const axios = require('axios');
 
 const app = express();
-app.use(cors());
+
+// Updated CORS configuration for production
+app.use(cors({
+    origin: [
+        'http://localhost',           // Local development
+        'http://127.0.0.1',           // Local development
+        'http://localhost:3000',      // Local frontend development
+        'http://127.0.0.1:3000',      // Local frontend development
+        'http://localhost:5500',      // Live Server extension
+        'http://127.0.0.1:5500',      // Live Server extension
+        'file://',                    // Direct file access
+        'https://clearpro-aligner-portal.netlify.app', // Your frontend when deployed
+        'https://*.netlify.app',      // Any Netlify subdomain
+        'https://*.vercel.app',       // Any Vercel subdomain
+        'https://*.github.io',        // GitHub Pages
+        '*'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
+
 app.use(express.json());
 
 const MONGODB_API_URL = process.env.MONGODB_API_URL;
@@ -95,10 +117,27 @@ app.delete('/api/cases/:id', async (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'ClearPro Aligner API is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'ClearPro Aligner API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'ClearPro Aligner Backend API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      cases: '/api/cases'
+    }
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Health check: https://clearpro-aligner-portal-backend.onrender.com/api/health`);
+  console.log(`🔗 API Base URL: https://clearpro-aligner-portal-backend.onrender.com/api`);
 });
