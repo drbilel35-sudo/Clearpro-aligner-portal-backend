@@ -14,7 +14,7 @@ app.use(cors({
         'http://localhost:5500',
         'http://127.0.0.1:5500',
         'https://clearproaligner-portal1.onrender.com',
-        'https://*.netlify.app'
+        'https://clearproaligner-portal.onrender.com', 
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
