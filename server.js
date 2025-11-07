@@ -1,4 +1,4 @@
-// server.js (FIXED VERSION)
+// server.js (COMPLETE FIXED VERSION FOR RENDER)
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -6,15 +6,16 @@ const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
 
-// CORS configuration - UPDATED
+// CORS configuration - UPDATED WITH YOUR FRONTEND URL
 app.use(cors({
     origin: [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
-        'http://localhost:5500',
+        'http://localhost:5500', 
         'http://127.0.0.1:5500',
-        'https://clearproaligner-portal1.onrender.com',
-         // ADDED - Your actual frontend URL
+        'https://clearproaligner-portal1.onrender.com', // YOUR FRONTEND
+        'https://clearproaligner-portal.onrender.com',
+        'https://total1.onrender.com'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -23,13 +24,13 @@ app.use(cors({
 
 app.use(express.json());
 
-// Get MongoDB URI from environment variables
+// MongoDB configuration
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://bilsheikh5_db_user:QHxl4ahWv0FE2Lps@cluster0.r2hta0h.mongodb.net/clearpro-aligner?retryWrites=true&w=majority';
 const PORT = process.env.PORT || 3001;
 
 let db;
 let client;
-let casesCollection; // ADDED - Store collection reference
+let casesCollection;
 
 // Connect to MongoDB
 async function connectToMongoDB() {
@@ -44,15 +45,15 @@ async function connectToMongoDB() {
         client = new MongoClient(MONGODB_URI);
         await client.connect();
         db = client.db('clearpro-aligner');
-        casesCollection = db.collection('cases'); // ADDED - Store collection
+        casesCollection = db.collection('cases');
         
         console.log('✅ Successfully connected to MongoDB');
         
         // Create indexes
         await casesCollection.createIndex({ caseId: 1 }, { unique: true });
         await casesCollection.createIndex({ createdAt: -1 });
-        await casesCollection.createIndex({ status: 1 }); // ADDED - For admin filtering
-        await casesCollection.createIndex({ doctor: 1 }); // ADDED - For doctor filtering
+        await casesCollection.createIndex({ status: 1 });
+        await casesCollection.createIndex({ doctor: 1 });
         
         return true;
     } catch (error) {
@@ -73,7 +74,9 @@ function generateId() {
 // Initialize connection
 let useMongoDB = false;
 
-// ✅ IMPROVED: GET all cases with better logging
+// ✅ IMPROVED ROUTES WITH BETTER LOGGING
+
+// GET all cases
 app.get('/api/cases', async (req, res) => {
     try {
         console.log('📥 GET /api/cases request received');
@@ -85,8 +88,8 @@ app.get('/api/cases', async (req, res) => {
             
             // Log first case for debugging
             if (cases.length > 0) {
-                console.log('📝 First case sample:', {
-                    _id: cases[0]._id,
+                console.log('📝 Sample case:', {
+                    id: cases[0]._id,
                     caseId: cases[0].caseId,
                     patient: cases[0].patient,
                     status: cases[0].status,
@@ -105,11 +108,10 @@ app.get('/api/cases', async (req, res) => {
     }
 });
 
-// ✅ IMPROVED: CREATE case with better logging
+// CREATE case
 app.post('/api/cases', async (req, res) => {
     try {
         console.log('📝 POST /api/cases request received');
-        console.log('📦 Request body:', req.body);
         
         const caseData = {
             ...req.body,
@@ -152,68 +154,6 @@ app.post('/api/cases', async (req, res) => {
     }
 });
 
-// ✅ NEW: GET case by ID
-app.get('/api/cases/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        console.log(`📥 GET /api/cases/${id} request received`);
-        
-        let caseData;
-        if (useMongoDB && casesCollection) {
-            caseData = await casesCollection.findOne({ _id: new ObjectId(id) });
-        } else {
-            caseData = memoryStorage.cases.find(c => c._id === id);
-        }
-        
-        if (!caseData) {
-            return res.status(404).json({ error: 'Case not found' });
-        }
-        
-        res.json(caseData);
-    } catch (error) {
-        console.error('❌ Error fetching case:', error.message);
-        res.status(500).json({ error: 'Failed to fetch case' });
-    }
-});
-
-// ✅ NEW: UPDATE case
-app.put('/api/cases/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        console.log(`🔄 PUT /api/cases/${id} request received`);
-        
-        const updateData = {
-            ...req.body,
-            updatedAt: new Date()
-        };
-
-        let result;
-        if (useMongoDB && casesCollection) {
-            result = await casesCollection.updateOne(
-                { _id: new ObjectId(id) },
-                { $set: updateData }
-            );
-        } else {
-            const index = memoryStorage.cases.findIndex(c => c._id === id);
-            if (index !== -1) {
-                memoryStorage.cases[index] = { ...memoryStorage.cases[index], ...updateData };
-                result = { modifiedCount: 1 };
-            } else {
-                result = { modifiedCount: 0 };
-            }
-        }
-        
-        if (result.modifiedCount === 0) {
-            return res.status(404).json({ error: 'Case not found' });
-        }
-        
-        res.json({ message: 'Case updated successfully' });
-    } catch (error) {
-        console.error('❌ Error updating case:', error.message);
-        res.status(500).json({ error: 'Failed to update case' });
-    }
-});
-
 // ✅ NEW: Statistics endpoint for admin dashboard
 app.get('/api/statistics', async (req, res) => {
     try {
@@ -243,7 +183,7 @@ app.get('/api/statistics', async (req, res) => {
             ).length
         };
         
-        console.log('📈 Statistics calculated:', statistics);
+        console.log('📈 Statistics:', statistics);
         res.json(statistics);
     } catch (error) {
         console.error('❌ Error fetching statistics:', error.message);
@@ -260,11 +200,10 @@ app.get('/api/health', async (req, res) => {
         database: useMongoDB ? 'MongoDB' : 'Memory Storage',
         environment: process.env.NODE_ENV || 'development',
         memoryCasesCount: memoryStorage.cases.length,
-        nodeEnv: process.env.NODE_ENV,
-        port: PORT
+        port: PORT,
+        frontend: 'https://clearproaligner-portal1.onrender.com'
     };
 
-    // Test MongoDB connection
     if (useMongoDB && db) {
         try {
             await db.command({ ping: 1 });
@@ -286,13 +225,12 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         status: 'Running',
         environment: process.env.NODE_ENV || 'development',
+        frontend: 'https://clearproaligner-portal1.onrender.com',
         endpoints: {
             health: 'GET /api/health',
             cases: 'GET /api/cases',
-            createCase: 'POST /api/cases',
             statistics: 'GET /api/statistics',
-            updateCase: 'PUT /api/cases/:id',
-            getCase: 'GET /api/cases/:id'
+            createCase: 'POST /api/cases'
         },
         database: useMongoDB ? 'MongoDB' : 'Memory Storage'
     });
@@ -301,22 +239,28 @@ app.get('/', (req, res) => {
 // Initialize server
 async function startServer() {
     console.log('🚀 Starting ClearPro Aligner Backend...');
+    console.log('🌐 Frontend URL: https://clearproaligner-portal1.onrender.com');
+    console.log('🔌 Port:', PORT);
     console.log('📝 Environment:', process.env.NODE_ENV || 'development');
-    console.log('🔐 MongoDB URI:', MONGODB_URI ? 'Set' : 'Not set');
     
     useMongoDB = await connectToMongoDB();
     
-    app.listen(PORT, () => {
+    // FIX: Listen on all interfaces for Render
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`✅ Server running on port ${PORT}`);
-        console.log(`🌐 CORS enabled for: https://total1.onrender.com`);
-        console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-        console.log(`📋 Cases endpoint: http://localhost:${PORT}/api/cases`);
-        console.log(`💾 Storage: ${useMongoDB ? 'MongoDB' : 'Memory (MongoDB not available)'}`);
-        
-        if (!useMongoDB) {
-            console.log('⚠️  Running in fallback mode - data will be lost on server restart');
-        }
+        console.log(`🔗 Health check: http://0.0.0.0:${PORT}/api/health`);
+        console.log(`📋 Cases endpoint: http://0.0.0.0:${PORT}/api/cases`);
+        console.log(`💾 Storage: ${useMongoDB ? 'MongoDB' : 'Memory Storage'}`);
     });
 }
+
+// Error handlers
+process.on('uncaughtException', (error) => {
+    console.error('❌ Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 startServer().catch(console.error);
