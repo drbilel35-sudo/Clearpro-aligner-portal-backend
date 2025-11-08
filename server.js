@@ -77,9 +77,9 @@ let useMongoDB = false;
 // ✅ IMPROVED ROUTES WITH BETTER LOGGING
 
 // GET all cases
-app.get('/cases', async (req, res) => {
+app.get('/api/cases', async (req, res) => {
     try {
-        console.log('📥 GET /cases request received');
+        console.log('📥 GET /api/cases request received');
         
         let cases;
         if (useMongoDB && casesCollection) {
@@ -228,7 +228,7 @@ app.get('/', (req, res) => {
         frontend: 'https://clearproaligner-portal1.onrender.com',
         endpoints: {
             health: 'GET /api/health',
-            cases: 'GET /cases',
+            cases: 'GET /api/cases',
             statistics: 'GET /api/statistics',
             createCase: 'POST /api/cases'
         },
