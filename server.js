@@ -228,7 +228,7 @@ app.get('/', (req, res) => {
         frontend: 'https://clearproaligner-portal1.onrender.com',
         endpoints: {
             health: 'GET /api/health',
-            cases: 'GET /api/cases',
+            cases: 'GET /cases',
             statistics: 'GET /api/statistics',
             createCase: 'POST /api/cases'
         },
