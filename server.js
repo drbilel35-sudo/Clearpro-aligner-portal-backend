@@ -77,9 +77,9 @@ let useMongoDB = false;
 // ✅ IMPROVED ROUTES WITH BETTER LOGGING
 
 // GET all cases
-app.get('/api/cases', async (req, res) => {
+app.get('/cases', async (req, res) => {
     try {
-        console.log('📥 GET /api/cases request received');
+        console.log('📥 GET /cases request received');
         
         let cases;
         if (useMongoDB && casesCollection) {
