@@ -15,7 +15,7 @@ app.use(cors({
         'http://127.0.0.1:5500',
         'https://clearproaligner-portal1.onrender.com', // YOUR FRONTEND
         'https://clearproaligner-portal.onrender.com',
-        'https://total1.onrender.com'
+        'https://admin-portal-9lu8.onrender.com'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
