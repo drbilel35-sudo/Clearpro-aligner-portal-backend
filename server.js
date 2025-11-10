@@ -1,4 +1,4 @@
-// server.js (COMPLETE FIXED VERSION FOR RENDER)
+// server.js (COMPLETE UPDATED VERSION WITH FILE UPLOAD STATUS TRACKING)
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -75,7 +75,7 @@ function generateId() {
 // Initialize connection
 let useMongoDB = false;
 
-// ✅ IMPROVED ROUTES WITH BETTER LOGGING
+// ✅ IMPROVED ROUTES WITH FILE UPLOAD STATUS TRACKING
 
 // GET all cases
 app.get('/api/cases', async (req, res) => {
@@ -94,7 +94,8 @@ app.get('/api/cases', async (req, res) => {
                     caseId: cases[0].caseId,
                     patient: cases[0].patient,
                     status: cases[0].status,
-                    doctor: cases[0].doctor
+                    doctor: cases[0].doctor,
+                    fileUploadStatus: cases[0].fileUploadStatus
                 });
             }
         } else {
@@ -109,17 +110,35 @@ app.get('/api/cases', async (req, res) => {
     }
 });
 
-// CREATE case
+// CREATE case with file upload status
 app.post('/api/cases', async (req, res) => {
     try {
         console.log('📝 POST /api/cases request received');
+        console.log('📦 Request body:', req.body);
         
         const caseData = {
             ...req.body,
             _id: generateId(),
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            // ✅ ADD FILE UPLOAD STATUS TRACKING
+            fileUploadStatus: {
+                stlFiles: req.body.stlFiles || [],
+                prescription: req.body.prescription || null,
+                photos: req.body.photos || [],
+                status: 'pending', // pending, uploaded, completed
+                lastUpdated: new Date()
+            },
+            // ✅ ENSURE STATUS IS SET
+            status: req.body.status || 'pending'
         };
+
+        console.log('🔄 Creating case with data:', {
+            caseId: caseData.caseId,
+            patient: caseData.patient,
+            status: caseData.status,
+            fileUploadStatus: caseData.fileUploadStatus
+        });
 
         if (useMongoDB && casesCollection) {
             const result = await casesCollection.insertOne(caseData);
@@ -144,13 +163,197 @@ app.post('/api/cases', async (req, res) => {
             ...req.body,
             _id: generateId(),
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            fileUploadStatus: {
+                stlFiles: req.body.stlFiles || [],
+                prescription: req.body.prescription || null,
+                photos: req.body.photos || [],
+                status: 'pending',
+                lastUpdated: new Date()
+            },
+            status: req.body.status || 'pending'
         };
         memoryStorage.cases.push(caseData);
         res.json({ 
             insertedId: caseData._id, 
             case: caseData,
             message: 'Case created with fallback storage'
+        });
+    }
+});
+
+// ✅ NEW: UPDATE case status and file upload status
+app.put('/api/cases/:id', async (req, res) => {
+    try {
+        console.log('🔄 PUT /api/cases/:id request received');
+        console.log('📦 Case ID:', req.params.id);
+        console.log('📦 Update data:', req.body);
+        
+        const { id } = req.params;
+        const updateData = {
+            ...req.body,
+            updatedAt: new Date()
+        };
+
+        let result;
+        if (useMongoDB && casesCollection) {
+            result = await casesCollection.findOneAndUpdate(
+                { _id: new ObjectId(id) },
+                { $set: updateData },
+                { returnDocument: 'after' }
+            );
+            
+            if (result.value) {
+                console.log('✅ Case updated in MongoDB:', id);
+                res.json({ 
+                    success: true,
+                    case: result.value,
+                    message: 'Case updated successfully'
+                });
+            } else {
+                console.log('❌ Case not found in MongoDB:', id);
+                res.status(404).json({ 
+                    success: false,
+                    message: 'Case not found'
+                });
+            }
+        } else {
+            const caseIndex = memoryStorage.cases.findIndex(c => c._id === id);
+            if (caseIndex !== -1) {
+                memoryStorage.cases[caseIndex] = {
+                    ...memoryStorage.cases[caseIndex],
+                    ...updateData
+                };
+                console.log('✅ Case updated in memory storage:', id);
+                res.json({ 
+                    success: true,
+                    case: memoryStorage.cases[caseIndex],
+                    message: 'Case updated successfully'
+                });
+            } else {
+                console.log('❌ Case not found in memory storage:', id);
+                res.status(404).json({ 
+                    success: false,
+                    message: 'Case not found'
+                });
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error updating case:', error.message);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to update case',
+            error: error.message
+        });
+    }
+});
+
+// ✅ NEW: UPDATE file upload status specifically
+app.put('/api/cases/:id/file-upload', async (req, res) => {
+    try {
+        console.log('📁 PUT /api/cases/:id/file-upload request received');
+        console.log('📦 Case ID:', req.params.id);
+        console.log('📦 File upload data:', req.body);
+        
+        const { id } = req.params;
+        const { stlFiles, prescription, photos, status } = req.body;
+        
+        const fileUpdateData = {
+            fileUploadStatus: {
+                stlFiles: stlFiles || [],
+                prescription: prescription || null,
+                photos: photos || [],
+                status: status || 'uploaded',
+                lastUpdated: new Date()
+            },
+            updatedAt: new Date()
+        };
+
+        let result;
+        if (useMongoDB && casesCollection) {
+            result = await casesCollection.findOneAndUpdate(
+                { _id: new ObjectId(id) },
+                { $set: fileUpdateData },
+                { returnDocument: 'after' }
+            );
+            
+            if (result.value) {
+                console.log('✅ File upload status updated for case:', id);
+                console.log('📊 New file status:', fileUpdateData.fileUploadStatus);
+                res.json({ 
+                    success: true,
+                    case: result.value,
+                    message: 'File upload status updated successfully'
+                });
+            } else {
+                console.log('❌ Case not found for file update:', id);
+                res.status(404).json({ 
+                    success: false,
+                    message: 'Case not found'
+                });
+            }
+        } else {
+            const caseIndex = memoryStorage.cases.findIndex(c => c._id === id);
+            if (caseIndex !== -1) {
+                memoryStorage.cases[caseIndex] = {
+                    ...memoryStorage.cases[caseIndex],
+                    ...fileUpdateData
+                };
+                console.log('✅ File upload status updated in memory storage:', id);
+                res.json({ 
+                    success: true,
+                    case: memoryStorage.cases[caseIndex],
+                    message: 'File upload status updated successfully'
+                });
+            } else {
+                console.log('❌ Case not found in memory storage:', id);
+                res.status(404).json({ 
+                    success: false,
+                    message: 'Case not found'
+                });
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error updating file upload status:', error.message);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to update file upload status',
+            error: error.message
+        });
+    }
+});
+
+// ✅ NEW: GET single case by ID
+app.get('/api/cases/:id', async (req, res) => {
+    try {
+        console.log('📥 GET /api/cases/:id request received');
+        console.log('📦 Case ID:', req.params.id);
+        
+        const { id } = req.params;
+        
+        let caseData;
+        if (useMongoDB && casesCollection) {
+            caseData = await casesCollection.findOne({ _id: new ObjectId(id) });
+        } else {
+            caseData = memoryStorage.cases.find(c => c._id === id);
+        }
+        
+        if (caseData) {
+            console.log('✅ Case found:', caseData.caseId);
+            res.json(caseData);
+        } else {
+            console.log('❌ Case not found:', id);
+            res.status(404).json({ 
+                success: false,
+                message: 'Case not found'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error fetching case:', error.message);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to fetch case',
+            error: error.message
         });
     }
 });
@@ -181,7 +384,19 @@ app.get('/api/statistics', async (req, res) => {
             ).length,
             cancelled: cases.filter(c => 
                 c.status?.toLowerCase().includes('cancelled')
-            ).length
+            ).length,
+            // ✅ ADD FILE UPLOAD STATISTICS
+            fileUploads: {
+                pending: cases.filter(c => 
+                    c.fileUploadStatus?.status === 'pending'
+                ).length,
+                uploaded: cases.filter(c => 
+                    c.fileUploadStatus?.status === 'uploaded'
+                ).length,
+                completed: cases.filter(c => 
+                    c.fileUploadStatus?.status === 'completed'
+                ).length
+            }
         };
         
         console.log('📈 Statistics:', statistics);
@@ -202,7 +417,12 @@ app.get('/api/health', async (req, res) => {
         environment: process.env.NODE_ENV || 'development',
         memoryCasesCount: memoryStorage.cases.length,
         port: PORT,
-        frontend: 'https://clearproaligner-portal1.onrender.com'
+        frontend: 'https://clearproaligner-portal1.onrender.com',
+        features: {
+            fileUploadTracking: true,
+            statusUpdates: true,
+            realTimeUpdates: true
+        }
     };
 
     if (useMongoDB && db) {
@@ -230,10 +450,19 @@ app.get('/', (req, res) => {
         endpoints: {
             health: 'GET /api/health',
             cases: 'GET /api/cases',
+            caseById: 'GET /api/cases/:id',
             statistics: 'GET /api/statistics',
-            createCase: 'POST /api/cases'
+            createCase: 'POST /api/cases',
+            updateCase: 'PUT /api/cases/:id',
+            updateFileUpload: 'PUT /api/cases/:id/file-upload'
         },
-        database: useMongoDB ? 'MongoDB' : 'Memory Storage'
+        database: useMongoDB ? 'MongoDB' : 'Memory Storage',
+        features: [
+            'File upload status tracking',
+            'Real-time case status updates',
+            'Doctor portal integration',
+            'Statistics dashboard'
+        ]
     });
 });
 
@@ -252,6 +481,11 @@ async function startServer() {
         console.log(`🔗 Health check: http://0.0.0.0:${PORT}/api/health`);
         console.log(`📋 Cases endpoint: http://0.0.0.0:${PORT}/api/cases`);
         console.log(`💾 Storage: ${useMongoDB ? 'MongoDB' : 'Memory Storage'}`);
+        console.log('🎯 Features enabled:');
+        console.log('   ✅ File upload status tracking');
+        console.log('   ✅ Real-time case updates');
+        console.log('   ✅ Doctor portal integration');
+        console.log('   ✅ Statistics dashboard');
     });
 }
 
