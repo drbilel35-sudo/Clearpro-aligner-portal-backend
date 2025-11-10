@@ -1,4 +1,4 @@
-// server.js - COMPLETE REAL-TIME MONGODB VERSION
+// server.js - CORRECT WORKFLOW: Doctor Pending Treatment → Admin Pending Upload → Doctor Pending Approval
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -44,40 +44,31 @@ async function connectToMongoDB() {
   try {
     console.log("🔗 Connecting to MongoDB...");
     
-    if (!MONGODB_URI) {
-      throw new Error("❌ MONGODB_URI is not defined");
-    }
-    
     client = new MongoClient(MONGODB_URI, {
       serverSelectionTimeoutMS: 15000,
       connectTimeoutMS: 15000,
       socketTimeoutMS: 45000,
-      maxPoolSize: 10,
-      minPoolSize: 5
     });
     
     await client.connect();
     db = client.db("clearpro-aligner");
     casesCollection = db.collection("cases");
 
-    // Test connection
     await db.command({ ping: 1 });
-    console.log("✅ MongoDB ping successful");
+    console.log("✅ MongoDB connected successfully");
 
-    // Create indexes for better performance
+    // Create indexes
     await casesCollection.createIndex({ caseId: 1 }, { unique: true });
     await casesCollection.createIndex({ status: 1 });
     await casesCollection.createIndex({ createdAt: -1 });
     await casesCollection.createIndex({ doctor: 1 });
-    await casesCollection.createIndex({ "patient.name": 1 });
-    await casesCollection.createIndex({ "fileUploadStatus.status": 1 });
     
-    console.log("✅ MongoDB connected and indexes created");
+    console.log("✅ Database indexes created");
     return true;
     
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err.message);
-    process.exit(1); // Exit if MongoDB fails
+    process.exit(1);
   }
 }
 
@@ -90,18 +81,38 @@ function generateCaseId() {
 }
 
 /* ===========================
-   ✅ GET ALL CASES - REAL TIME
+   ✅ WORKFLOW STATUSES:
+   1. Doctor creates case → "pending_treatment" (Doctor Portal: Pending Treatment Plan)
+   2. Admin uploads treatment plan → "pending_approval" (Doctor Portal: Pending Approval)
+   3. Doctor approves → "approved"
+   4. Doctor requests revision → "revision_requested"
+=========================== */
+
+/* ===========================
+   ✅ GET ALL CASES
 =========================== */
 app.get("/api/cases", async (req, res) => {
   try {
     console.log("📥 GET /api/cases - Fetching all cases");
     
+    const { status, doctor, view } = req.query;
+    
+    let query = {};
+    
+    if (status) {
+      query.status = status;
+    }
+    
+    if (doctor) {
+      query.doctor = decodeURIComponent(doctor);
+    }
+    
     const cases = await casesCollection
-      .find({})
+      .find(query)
       .sort({ createdAt: -1 })
       .toArray();
     
-    console.log(`✅ Found ${cases.length} cases in database`);
+    console.log(`✅ Found ${cases.length} cases`);
     
     res.json({
       success: true,
@@ -114,60 +125,17 @@ app.get("/api/cases", async (req, res) => {
     console.error("❌ Error fetching cases:", err.message);
     res.status(500).json({ 
       success: false,
-      error: "Failed to fetch cases from database" 
+      error: "Failed to fetch cases" 
     });
   }
 });
 
 /* ===========================
-   ✅ GET CASE BY ID
-=========================== */
-app.get("/api/cases/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(`📥 GET /api/cases/${id} - Fetching case`);
-    
-    let caseData;
-    if (ObjectId.isValid(id)) {
-      caseData = await casesCollection.findOne({ _id: new ObjectId(id) });
-    } else {
-      caseData = await casesCollection.findOne({ caseId: id });
-    }
-    
-    if (!caseData) {
-      console.log(`❌ Case not found: ${id}`);
-      return res.status(404).json({ 
-        success: false,
-        message: "Case not found" 
-      });
-    }
-    
-    console.log(`✅ Case found: ${caseData.caseId}`);
-    res.json({
-      success: true,
-      case: caseData
-    });
-    
-  } catch (err) {
-    console.error("❌ Error fetching case:", err.message);
-    res.status(500).json({ 
-      success: false,
-      error: "Failed to fetch case" 
-    });
-  }
-});
-
-/* ===========================
-   ✅ CREATE NEW CASE - REAL TIME
+   ✅ DOCTOR: CREATE NEW CASE
 =========================== */
 app.post("/api/cases", async (req, res) => {
   try {
-    console.log("📝 POST /api/cases - Creating new case");
-    console.log("📦 Request data:", {
-      patient: req.body.patient,
-      doctor: req.body.doctor,
-      files: req.body.stlFiles?.length || 0
-    });
+    console.log("👨‍⚕️ POST /api/cases - Doctor creating new case");
     
     const caseData = {
       ...req.body,
@@ -175,212 +143,96 @@ app.post("/api/cases", async (req, res) => {
       caseId: req.body.caseId || generateCaseId(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      status: req.body.status || "pending",
-      fileUploadStatus: {
+      status: "pending_treatment", // Shows in Doctor Portal as "Pending Treatment Plan"
+      createdBy: "doctor",
+      
+      // Patient details
+      patient: req.body.patient || { 
+        name: "Unknown Patient",
+        age: "",
+        gender: "",
+        contact: "" 
+      },
+      doctor: req.body.doctor || "Unknown Doctor",
+      clinic: req.body.clinic || "",
+      notes: req.body.notes || "",
+      priority: req.body.priority || "normal",
+      
+      // Files uploaded by doctor
+      doctorUploads: {
         stlFiles: req.body.stlFiles || [],
         prescription: req.body.prescription || null,
         photos: req.body.photos || [],
-        status: req.body.fileUploadStatus?.status || "pending",
         uploadedAt: new Date(),
-        lastUpdated: new Date(),
       },
-      // Ensure required fields
-      patient: req.body.patient || { name: "Unknown Patient" },
-      doctor: req.body.doctor || "Unknown Doctor",
-      notes: req.body.notes || "",
-      priority: req.body.priority || "normal"
+      
+      // Treatment plan (to be filled by admin)
+      treatmentPlan: {
+        status: "pending",
+        files: [],
+        notes: "",
+        uploadedBy: "",
+        uploadedAt: null
+      }
     };
 
-    console.log(`🔄 Creating case: ${caseData.caseId}`);
+    console.log(`🔄 Doctor creating case: ${caseData.caseId}`);
+    console.log(`📊 Status: ${caseData.status} (Pending Treatment Plan)`);
 
     const result = await casesCollection.insertOne(caseData);
     
-    console.log(`✅ Case created successfully: ${caseData.caseId}`);
-    console.log(`📊 Case details:`, {
-      caseId: caseData.caseId,
-      patient: caseData.patient.name,
-      doctor: caseData.doctor,
-      status: caseData.status,
-      files: caseData.fileUploadStatus.stlFiles.length
-    });
+    console.log(`✅ Case created: ${caseData.caseId} - Now waiting for admin treatment plan`);
 
     res.status(201).json({
       success: true,
-      message: "Case created successfully",
+      message: "Case created successfully - Waiting for treatment plan",
       case: caseData,
       insertedId: result.insertedId
     });
     
   } catch (err) {
     console.error("❌ Error creating case:", err.message);
-    
-    if (err.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        error: "Case ID already exists"
-      });
-    }
-    
     res.status(500).json({
       success: false,
-      error: "Failed to create case in database"
+      error: "Failed to create case"
     });
   }
 });
 
 /* ===========================
-   ✅ UPDATE CASE STATUS - REAL TIME
+   ✅ ADMIN: UPLOAD TREATMENT PLAN
 =========================== */
-app.patch("/api/cases/:id/status", async (req, res) => {
+app.put("/api/cases/:id/treatment-plan", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, notes } = req.body;
+    const { files, notes, uploadedBy } = req.body;
     
-    console.log(`🔄 PATCH /api/cases/${id}/status - Updating status`);
-    console.log(`📦 New status: ${status}, Notes: ${notes || 'None'}`);
+    console.log(`📁 PUT /api/cases/${id}/treatment-plan - Admin uploading treatment plan`);
 
-    if (!status) {
+    if (!files || files.length === 0) {
       return res.status(400).json({
         success: false,
-        error: "Status is required"
+        error: "Treatment plan files are required"
       });
     }
 
-    const updateData = {
-      status,
-      updatedAt: new Date(),
-      ...(notes && { notes })
-    };
-
-    const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { caseId: id };
-    
-    const result = await casesCollection.findOneAndUpdate(
-      query,
-      { $set: updateData },
-      { returnDocument: "after" }
-    );
-    
-    if (!result.value) {
-      console.log(`❌ Case not found: ${id}`);
-      return res.status(404).json({
-        success: false,
-        error: "Case not found"
-      });
-    }
-    
-    const updatedCase = result.value;
-    
-    console.log(`✅ Status updated successfully: ${updatedCase.caseId} -> ${status}`);
-    console.log(`📊 Case update:`, {
-      caseId: updatedCase.caseId,
-      patient: updatedCase.patient.name,
-      oldStatus: updatedCase.status,
-      newStatus: status,
-      updatedAt: updatedCase.updatedAt
-    });
-
-    res.json({
-      success: true,
-      message: "Case status updated successfully",
-      case: updatedCase,
-      status: status
-    });
-    
-  } catch (err) {
-    console.error("❌ Error updating status:", err.message);
-    res.status(500).json({
-      success: false,
-      error: "Failed to update case status"
-    });
-  }
-});
-
-/* ===========================
-   ✅ UPDATE FILE UPLOAD STATUS - REAL TIME
-=========================== */
-app.put("/api/cases/:id/file-upload", async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    console.log(`📁 PUT /api/cases/${id}/file-upload - Updating file status`);
-    console.log("📦 File data:", {
-      stlFiles: req.body.stlFiles?.length || 0,
-      photos: req.body.photos?.length || 0,
-      status: req.body.status
-    });
-
-    const fileUpdate = {
-      fileUploadStatus: {
-        stlFiles: req.body.stlFiles || [],
-        prescription: req.body.prescription || null,
-        photos: req.body.photos || [],
-        status: req.body.status || "uploaded",
-        lastUpdated: new Date(),
+    const treatmentPlanUpdate = {
+      treatmentPlan: {
+        status: "uploaded",
+        files: files,
+        notes: notes || "",
+        uploadedBy: uploadedBy || "Admin",
+        uploadedAt: new Date()
       },
-      updatedAt: new Date(),
-    };
-
-    const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { caseId: id };
-    
-    const result = await casesCollection.findOneAndUpdate(
-      query,
-      { $set: fileUpdate },
-      { returnDocument: "after" }
-    );
-    
-    if (!result.value) {
-      console.log(`❌ Case not found: ${id}`);
-      return res.status(404).json({
-        success: false,
-        error: "Case not found"
-      });
-    }
-    
-    const updatedCase = result.value;
-    
-    console.log(`✅ File upload status updated: ${updatedCase.caseId}`);
-    console.log(`📊 File status: ${fileUpdate.fileUploadStatus.status}`);
-    console.log(`📁 Files: ${fileUpdate.fileUploadStatus.stlFiles.length} STL, ${fileUpdate.fileUploadStatus.photos.length} photos`);
-
-    res.json({
-      success: true,
-      message: "File upload status updated successfully",
-      case: updatedCase,
-      fileStatus: fileUpdate.fileUploadStatus.status
-    });
-    
-  } catch (err) {
-    console.error("❌ Error updating file upload:", err.message);
-    res.status(500).json({
-      success: false,
-      error: "Failed to update file upload status"
-    });
-  }
-});
-
-/* ===========================
-   ✅ COMPLETE CASE UPDATE - REAL TIME
-=========================== */
-app.put("/api/cases/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    console.log(`🔄 PUT /api/cases/${id} - Full case update`);
-    console.log("📦 Update data:", Object.keys(req.body));
-
-    const updateData = {
-      ...req.body,
+      status: "pending_approval", // Now shows in Doctor Portal as "Pending Approval"
       updatedAt: new Date()
     };
 
-    // Remove _id to prevent modification
-    delete updateData._id;
-
     const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { caseId: id };
     
     const result = await casesCollection.findOneAndUpdate(
       query,
-      { $set: updateData },
+      { $set: treatmentPlanUpdate },
       { returnDocument: "after" }
     );
     
@@ -394,44 +246,187 @@ app.put("/api/cases/:id", async (req, res) => {
     
     const updatedCase = result.value;
     
-    console.log(`✅ Case updated successfully: ${updatedCase.caseId}`);
-    console.log(`📊 Updated fields:`, Object.keys(req.body));
+    console.log(`✅ Treatment plan uploaded: ${updatedCase.caseId}`);
+    console.log(`📊 Status changed to: ${updatedCase.status} (Pending Approval)`);
 
     res.json({
       success: true,
-      message: "Case updated successfully",
-      case: updatedCase
+      message: "Treatment plan uploaded - Waiting for doctor approval",
+      case: updatedCase,
+      status: updatedCase.status
     });
     
   } catch (err) {
-    console.error("❌ Error updating case:", err.message);
+    console.error("❌ Error uploading treatment plan:", err.message);
     res.status(500).json({
       success: false,
-      error: "Failed to update case"
+      error: "Failed to upload treatment plan"
     });
   }
 });
 
 /* ===========================
-   ✅ GET CASES BY DOCTOR - REAL TIME
+   ✅ DOCTOR: APPROVE TREATMENT PLAN
 =========================== */
-app.get("/api/cases/doctor/:doctor", async (req, res) => {
+app.patch("/api/cases/:id/approve", async (req, res) => {
   try {
-    const { doctor } = req.params;
-    console.log(`👨‍⚕️ GET /api/cases/doctor/${doctor} - Fetching doctor cases`);
+    const { id } = req.params;
+    const { approvedBy, notes } = req.body;
+    
+    console.log(`✅ PATCH /api/cases/${id}/approve - Doctor approving treatment plan`);
+
+    const approvalUpdate = {
+      "treatmentPlan.status": "approved",
+      "treatmentPlan.approvedBy": approvedBy || "Doctor",
+      "treatmentPlan.approvedAt": new Date(),
+      "treatmentPlan.approvalNotes": notes || "",
+      status: "approved", // Final approved status
+      updatedAt: new Date()
+    };
+
+    const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { caseId: id };
+    
+    const result = await casesCollection.findOneAndUpdate(
+      query,
+      { $set: approvalUpdate },
+      { returnDocument: "after" }
+    );
+    
+    if (!result.value) {
+      console.log(`❌ Case not found: ${id}`);
+      return res.status(404).json({
+        success: false,
+        error: "Case not found"
+      });
+    }
+    
+    const updatedCase = result.value;
+    
+    console.log(`✅ Treatment plan approved: ${updatedCase.caseId}`);
+    console.log(`🎉 Case completed: ${updatedCase.patient.name}`);
+
+    res.json({
+      success: true,
+      message: "Treatment plan approved successfully",
+      case: updatedCase,
+      status: updatedCase.status
+    });
+    
+  } catch (err) {
+    console.error("❌ Error approving treatment plan:", err.message);
+    res.status(500).json({
+      success: false,
+      error: "Failed to approve treatment plan"
+    });
+  }
+});
+
+/* ===========================
+   ✅ DOCTOR: REQUEST REVISION
+=========================== */
+app.patch("/api/cases/:id/request-revision", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { revisionNotes, requestedBy } = req.body;
+    
+    console.log(`🔄 PATCH /api/cases/${id}/request-revision - Doctor requesting revision`);
+
+    if (!revisionNotes) {
+      return res.status(400).json({
+        success: false,
+        error: "Revision notes are required"
+      });
+    }
+
+    const revisionUpdate = {
+      status: "revision_requested",
+      "treatmentPlan.status": "revision_requested",
+      "treatmentPlan.revisionNotes": revisionNotes,
+      "treatmentPlan.revisionRequestedBy": requestedBy || "Doctor",
+      "treatmentPlan.revisionRequestedAt": new Date(),
+      updatedAt: new Date()
+    };
+
+    const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { caseId: id };
+    
+    const result = await casesCollection.findOneAndUpdate(
+      query,
+      { $set: revisionUpdate },
+      { returnDocument: "after" }
+    );
+    
+    if (!result.value) {
+      console.log(`❌ Case not found: ${id}`);
+      return res.status(404).json({
+        success: false,
+        error: "Case not found"
+      });
+    }
+    
+    const updatedCase = result.value;
+    
+    console.log(`✅ Revision requested: ${updatedCase.caseId}`);
+
+    res.json({
+      success: true,
+      message: "Revision requested successfully",
+      case: updatedCase,
+      status: updatedCase.status
+    });
+    
+  } catch (err) {
+    console.error("❌ Error requesting revision:", err.message);
+    res.status(500).json({
+      success: false,
+      error: "Failed to request revision"
+    });
+  }
+});
+
+/* ===========================
+   ✅ GET DOCTOR PORTAL CASES
+=========================== */
+app.get("/api/cases/doctor/:doctorId", async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    
+    console.log(`👨‍⚕️ GET /api/cases/doctor/${doctorId} - Fetching doctor portal cases`);
     
     const cases = await casesCollection
-      .find({ doctor: decodeURIComponent(doctor) })
-      .sort({ createdAt: -1 })
+      .find({ doctor: decodeURIComponent(doctorId) })
+      .sort({ updatedAt: -1 })
       .toArray();
     
-    console.log(`✅ Found ${cases.length} cases for doctor: ${doctor}`);
+    // Group by status for doctor portal
+    const pendingTreatment = cases.filter(c => c.status === 'pending_treatment');
+    const pendingApproval = cases.filter(c => c.status === 'pending_approval');
+    const approved = cases.filter(c => c.status === 'approved');
+    const revisionRequested = cases.filter(c => c.status === 'revision_requested');
+    
+    console.log(`✅ Doctor ${doctorId} cases:`, {
+      pendingTreatment: pendingTreatment.length,
+      pendingApproval: pendingApproval.length,
+      approved: approved.length,
+      revisionRequested: revisionRequested.length
+    });
     
     res.json({
       success: true,
-      cases: cases,
-      total: cases.length,
-      doctor: doctor
+      cases: {
+        pendingTreatment: pendingTreatment, // Waiting for admin to upload treatment
+        pendingApproval: pendingApproval,   // Waiting for doctor to approve
+        approved: approved,                 // Completed cases
+        revisionRequested: revisionRequested // Needs admin revision
+      },
+      statistics: {
+        pendingTreatment: pendingTreatment.length,
+        pendingApproval: pendingApproval.length,
+        approved: approved.length,
+        revisionRequested: revisionRequested.length,
+        total: cases.length
+      },
+      doctor: doctorId,
+      timestamp: new Date().toISOString()
     });
     
   } catch (err) {
@@ -444,7 +439,57 @@ app.get("/api/cases/doctor/:doctor", async (req, res) => {
 });
 
 /* ===========================
-   ✅ GET CASES BY STATUS - REAL TIME
+   ✅ GET ADMIN DASHBOARD CASES
+=========================== */
+app.get("/api/cases/admin/dashboard", async (req, res) => {
+  try {
+    console.log("👨‍💼 GET /api/cases/admin/dashboard - Fetching admin dashboard");
+    
+    const allCases = await casesCollection.find().sort({ createdAt: -1 }).toArray();
+    
+    // Admin dashboard views
+    const pendingUpload = allCases.filter(c => c.status === 'pending_treatment');
+    const pendingApproval = allCases.filter(c => c.status === 'pending_approval');
+    const revisionRequested = allCases.filter(c => c.status === 'revision_requested');
+    const approved = allCases.filter(c => c.status === 'approved');
+    
+    console.log(`📊 Admin dashboard stats:`, {
+      pendingUpload: pendingUpload.length,     // Waiting for admin to upload treatment
+      pendingApproval: pendingApproval.length, // Waiting for doctor approval
+      revisionRequested: revisionRequested.length, // Needs admin action
+      approved: approved.length               // Completed
+    });
+    
+    res.json({
+      success: true,
+      cases: {
+        pendingUpload: pendingUpload,        // Admin needs to upload treatment
+        pendingApproval: pendingApproval,    // Waiting for doctor
+        revisionRequested: revisionRequested, // Needs revision
+        approved: approved                   // Completed
+      },
+      statistics: {
+        pendingUpload: pendingUpload.length,
+        pendingApproval: pendingApproval.length,
+        revisionRequested: revisionRequested.length,
+        approved: approved.length,
+        total: allCases.length
+      },
+      recentActivity: allCases.slice(0, 10),
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (err) {
+    console.error("❌ Error fetching admin dashboard:", err.message);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch admin dashboard data"
+    });
+  }
+});
+
+/* ===========================
+   ✅ GET CASES BY STATUS
 =========================== */
 app.get("/api/cases/status/:status", async (req, res) => {
   try {
@@ -452,7 +497,7 @@ app.get("/api/cases/status/:status", async (req, res) => {
     console.log(`📊 GET /api/cases/status/${status} - Fetching cases by status`);
     
     const cases = await casesCollection
-      .find({ status: new RegExp(status, 'i') })
+      .find({ status: status })
       .sort({ createdAt: -1 })
       .toArray();
     
@@ -462,7 +507,8 @@ app.get("/api/cases/status/:status", async (req, res) => {
       success: true,
       cases: cases,
       total: cases.length,
-      status: status
+      status: status,
+      timestamp: new Date().toISOString()
     });
     
   } catch (err) {
@@ -475,7 +521,7 @@ app.get("/api/cases/status/:status", async (req, res) => {
 });
 
 /* ===========================
-   ✅ REAL-TIME STATISTICS - ADMIN DASHBOARD
+   ✅ REAL-TIME STATISTICS
 =========================== */
 app.get("/api/statistics", async (req, res) => {
   try {
@@ -485,49 +531,26 @@ app.get("/api/statistics", async (req, res) => {
     
     const statistics = {
       total: allCases.length,
-      pending: allCases.filter(c => c.status?.toLowerCase().includes("pending")).length,
-      inReview: allCases.filter(c => c.status?.toLowerCase().includes("review")).length,
-      approved: allCases.filter(c => c.status?.toLowerCase().includes("approved")).length,
-      revision: allCases.filter(c => c.status?.toLowerCase().includes("revision")).length,
-      hold: allCases.filter(c => c.status?.toLowerCase().includes("hold")).length,
-      cancelled: allCases.filter(c => c.status?.toLowerCase().includes("cancelled")).length,
-      completed: allCases.filter(c => c.status?.toLowerCase().includes("completed")).length,
+      pending_treatment: allCases.filter(c => c.status === 'pending_treatment').length,
+      pending_approval: allCases.filter(c => c.status === 'pending_approval').length,
+      revision_requested: allCases.filter(c => c.status === 'revision_requested').length,
+      approved: allCases.filter(c => c.status === 'approved').length,
       
-      fileUploads: {
-        pending: allCases.filter(c => c.fileUploadStatus?.status === "pending").length,
-        uploaded: allCases.filter(c => c.fileUploadStatus?.status === "uploaded").length,
-        completed: allCases.filter(c => c.fileUploadStatus?.status === "completed").length,
+      // Portal specific counts
+      doctorPortal: {
+        pendingTreatment: allCases.filter(c => c.status === 'pending_treatment').length,
+        pendingApproval: allCases.filter(c => c.status === 'pending_approval').length
       },
-      
-      doctors: {},
-      recentActivity: allCases
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-        .slice(0, 10)
-        .map(caseItem => ({
-          caseId: caseItem.caseId,
-          patient: caseItem.patient?.name,
-          status: caseItem.status,
-          updatedAt: caseItem.updatedAt
-        })),
+      adminDashboard: {
+        pendingUpload: allCases.filter(c => c.status === 'pending_treatment').length,
+        pendingApproval: allCases.filter(c => c.status === 'pending_approval').length
+      },
       
       timestamp: new Date().toISOString()
     };
 
-    // Calculate doctor-specific stats
-    allCases.forEach(caseItem => {
-      const doctor = caseItem.doctor || "Unknown";
-      if (!statistics.doctors[doctor]) {
-        statistics.doctors[doctor] = 0;
-      }
-      statistics.doctors[doctor]++;
-    });
-
-    console.log("📊 Real-time statistics generated:", {
-      total: statistics.total,
-      pending: statistics.pending,
-      doctors: Object.keys(statistics.doctors).length
-    });
-
+    console.log("📊 Portal statistics:", statistics);
+    
     res.json({
       success: true,
       statistics: statistics
@@ -543,36 +566,31 @@ app.get("/api/statistics", async (req, res) => {
 });
 
 /* ===========================
-   ✅ HEALTH CHECK WITH DB STATUS
+   ✅ HEALTH CHECK
 =========================== */
 app.get("/api/health", async (req, res) => {
   try {
-    const healthInfo = {
+    await db.command({ ping: 1 });
+    const totalCases = await casesCollection.countDocuments();
+    const pendingTreatment = await casesCollection.countDocuments({ status: 'pending_treatment' });
+    const pendingApproval = await casesCollection.countDocuments({ status: 'pending_approval' });
+    
+    res.json({
       status: "OK",
       message: "ClearPro Aligner API is running",
       timestamp: new Date().toISOString(),
-      database: "MongoDB",
+      database: "MongoDB Connected",
+      workflow: "Doctor → Admin → Doctor Approval",
+      statistics: {
+        totalCases: totalCases,
+        pendingTreatment: pendingTreatment,
+        pendingApproval: pendingApproval
+      },
       environment: process.env.NODE_ENV || "development",
-      port: PORT,
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      frontend: "https://clearproaligner-portal1.onrender.com"
-    };
-
-    // Test database connection
-    await db.command({ ping: 1 });
-    healthInfo.database = "MongoDB (Connected)";
-    
-    // Get database stats
-    healthInfo.casesCount = await casesCollection.countDocuments();
-    healthInfo.databaseStats = await db.stats();
-
-    console.log("🏥 Health check - System OK");
-    
-    res.json(healthInfo);
+      port: PORT
+    });
     
   } catch (err) {
-    console.error("❌ Health check failed:", err.message);
     res.status(500).json({
       status: "ERROR",
       message: "Database connection failed",
@@ -586,61 +604,67 @@ app.get("/api/health", async (req, res) => {
 =========================== */
 app.get("/", (req, res) => {
   res.json({
-    message: "ClearPro Aligner Backend API - REAL TIME",
-    version: "3.0.0",
+    message: "ClearPro Aligner Backend API - CORRECT WORKFLOW",
+    version: "6.0.0",
     status: "Running",
-    environment: process.env.NODE_ENV || "development",
     database: "MongoDB Real-time",
-    frontend: "https://clearproaligner-portal1.onrender.com",
-    endpoints: {
-      health: "GET /api/health",
-      allCases: "GET /api/cases",
-      caseById: "GET /api/cases/:id",
-      doctorCases: "GET /api/cases/doctor/:doctor",
-      statusCases: "GET /api/cases/status/:status",
-      statistics: "GET /api/statistics",
-      createCase: "POST /api/cases",
-      updateCase: "PUT /api/cases/:id",
-      updateStatus: "PATCH /api/cases/:id/status",
-      updateFiles: "PUT /api/cases/:id/file-upload"
+    workflow: [
+      "1. Doctor creates case → Status: 'pending_treatment'",
+      "2. Admin uploads treatment → Status: 'pending_approval'", 
+      "3. Doctor approves → Status: 'approved'"
+    ],
+    portalViews: {
+      doctorPortal: {
+        "Pending Treatment Plan": "pending_treatment cases",
+        "Pending Approval": "pending_approval cases",
+        "Approved Cases": "approved cases"
+      },
+      adminDashboard: {
+        "Pending Upload": "pending_treatment cases", 
+        "Pending Approval": "pending_approval cases",
+        "Revision Requested": "revision_requested cases"
+      }
     },
-    features: [
-      "Real-time MongoDB connection",
-      "Live case status updates",
-      "File upload tracking",
-      "Doctor portal integration",
-      "Admin dashboard with statistics",
-      "Automatic case ID generation"
-    ]
+    endpoints: {
+      // Doctor endpoints
+      "Create Case": "POST /api/cases",
+      "Doctor Portal": "GET /api/cases/doctor/:doctorId",
+      "Approve Plan": "PATCH /api/cases/:id/approve",
+      "Request Revision": "PATCH /api/cases/:id/request-revision",
+      
+      // Admin endpoints
+      "Admin Dashboard": "GET /api/cases/admin/dashboard", 
+      "Upload Treatment": "PUT /api/cases/:id/treatment-plan",
+      
+      // General
+      "All Cases": "GET /api/cases",
+      "Statistics": "GET /api/statistics",
+      "Health": "GET /api/health"
+    }
   });
 });
 
 /* ===========================
-   ✅ START SERVER WITH MONGODB
+   ✅ START SERVER
 =========================== */
 async function startServer() {
   try {
-    console.log("🚀 Starting ClearPro Aligner Backend - REAL TIME");
-    console.log("🌐 Frontend URL: https://clearproaligner-portal1.onrender.com");
-    console.log("🔌 Port:", PORT);
-    console.log("📝 Environment:", process.env.NODE_ENV || "development");
-    console.log("💾 Database: MongoDB Real-time");
+    console.log("🚀 Starting ClearPro Aligner Backend - CORRECT WORKFLOW");
+    console.log("💼 Workflow: Doctor → Admin → Doctor");
     
-    // Connect to MongoDB - REQUIRED
     await connectToMongoDB();
     
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`✅ Server running on port ${PORT}`);
-      console.log(`🔗 Health check: https://your-app.onrender.com/api/health`);
-      console.log(`📋 Cases API: https://your-app.onrender.com/api/cases`);
-      console.log(`📊 Statistics: https://your-app.onrender.com/api/statistics`);
-      console.log("🎯 REAL-TIME FEATURES ENABLED:");
-      console.log("   ✅ MongoDB Live Database Connection");
-      console.log("   ✅ Real-time Case Status Updates");
-      console.log("   ✅ Live File Upload Tracking");
-      console.log("   ✅ Admin Dashboard Statistics");
-      console.log("   ✅ Doctor Portal Integration");
-      console.log("   ✅ Automatic Case ID Generation");
+      console.log("🎯 PORTAL VIEWS:");
+      console.log("   👨‍⚕️ DOCTOR PORTAL:");
+      console.log("      📋 Pending Treatment Plan → waiting for admin upload");
+      console.log("      ⏳ Pending Approval → waiting for doctor approval"); 
+      console.log("      ✅ Approved Cases → completed");
+      console.log("   👨‍💼 ADMIN DASHBOARD:");
+      console.log("      📤 Pending Upload → need to upload treatment");
+      console.log("      ⏳ Pending Approval → waiting for doctor");
+      console.log("      🔄 Revision Requested → need to revise");
     });
     
   } catch (err) {
@@ -648,15 +672,6 @@ async function startServer() {
     process.exit(1);
   }
 }
-
-// Error handlers for robust operation
-process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught Exception:', error);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-});
 
 // Start the server
 startServer();
